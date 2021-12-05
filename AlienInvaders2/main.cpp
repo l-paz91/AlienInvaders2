@@ -30,6 +30,8 @@ int main()
 	playerSprite.setOrigin(GameConstants::PLAYER_OFFSET, 0); // top middle
 	playerSprite.setPosition(GameConstants::HALFW, GameConstants::PLAYER_Y);
 
+	GameObjects::PlayerShot playerShot;
+
 	// ---- INVADERS
 	std::vector<GameObjects::Invader> invaders(55);	
 	GameFunctions::initInvaders(invaders);
@@ -57,6 +59,8 @@ int main()
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
 		GameFunctions::movePlayer(playerSprite, dt.asSeconds());
 		GameFunctions::moveInvaders(invaders);
+		GameFunctions::updatePlayerShot(playerShot, playerSprite.getPosition().x, dt.asSeconds());
+
 		
 		// ---- UPDATE HUD --------------------------------------------------------- //
 
@@ -64,6 +68,7 @@ int main()
 		// ---- RENDER OBJECTS ----------------------------------------------------- //
 		window.draw(playerSprite);
 		GameFunctions::drawInvaders(invaders, window);
+		GameFunctions::drawPlayerShot(playerShot, window);
 
 		// ---- RENDER HUD --------------------------------------------------------- //
 

@@ -83,6 +83,22 @@ namespace GameObjects
 		Sprite mSprite;
 		InvaderType mType;
 	};
+
+	// -----------------------------------------------------------------------------
+
+	struct PlayerShot
+	{
+		PlayerShot()
+			: mPlayerShotRect()
+			, mShotsFired(false)
+		{
+			mPlayerShotRect.setSize(Vector2f(3.0f, 12.0f));
+			mPlayerShotRect.setFillColor(Color::White);
+		}
+
+		RectangleShape mPlayerShotRect;
+		bool mShotsFired;
+	};
 }
 
 // -----------------------------------------------------------------------------
@@ -219,6 +235,50 @@ namespace GameFunctions
 			invaderToUpdate = 0;
 		}
 	}
+
+	// -----------------------------------------------------------------------------
+
+	static void updatePlayerShot(GameObjects::PlayerShot& pShot, const float& pPlayerPosX, const float& pDeltaTime)
+	{
+		const bool s = Keyboard::isKeyPressed(Keyboard::S);
+		if (s && !pShot.mShotsFired)
+		{
+			// ensure shot always spawns direct top-centre of the player
+			pShot.mPlayerShotRect.setPosition(sf::Vector2f(pPlayerPosX - 2, PLAYER_Y - 12));
+			pShot.mShotsFired = true;
+		}
+
+		// update it
+		if (pShot.mShotsFired)
+		{
+			pShot.mPlayerShotRect.move(0, -(720 * pDeltaTime));
+
+			// if it hits the top, remove it
+			if (pShot.mPlayerShotRect.getPosition().y <= TOP_BANNER)
+			{
+				pShot.mPlayerShotRect.setPosition(sf::Vector2f(0, 0));
+				pShot.mShotsFired = false;
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+
+	static void drawPlayerShot(const GameObjects::PlayerShot& pShot, sf::RenderWindow& pWindow)
+	{
+		if (pShot.mShotsFired)
+		{
+			pWindow.draw(pShot.mPlayerShotRect);
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+
+	static void hasPlayerHitInvader(GameObjects::PlayerShot& pShot, std::vector<GameObjects::Invader>& pInvaders)
+	{
+
+	}
+
 }
 
 // -----------------------------------------------------------------------------
