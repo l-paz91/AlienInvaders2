@@ -36,6 +36,9 @@ int main()
 	// ---- INVADERS
 	std::vector<GameObjects::Invader> invaders(55);	
 	GameFunctions::initInvaders(invaders);
+	GameFunctions::initGrid();
+
+	std::vector<GameObjects::InvaderShot> invaderShots;
 
 	// ---- HUD
 	HUD gameHUD;
@@ -68,19 +71,20 @@ int main()
 
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
 		GameFunctions::movePlayer(playerSprite, dt.asSeconds());
-		GameFunctions::moveInvaders(invaders);
-
 		GameFunctions::updatePlayerShot(playerShot, playerSprite.getPosition().x, dt.asSeconds());
 		GameFunctions::hasPlayerHitInvader(playerShot, invaders, gameHUD);
-
 		
+		GameFunctions::updateInvaders(invaders, invaderShots, dt.asSeconds());
+	
 		// ---- UPDATE HUD --------------------------------------------------------- //
 		gameHUD.update();
 
 		// ---- RENDER OBJECTS ----------------------------------------------------- //
 		window.draw(playerSprite);
-		GameFunctions::drawInvaders(invaders, window);
 		GameFunctions::drawPlayerShot(playerShot, window);
+
+		GameFunctions::drawInvaders(invaders, window);
+		GameFunctions::drawInvaderShots(invaderShots, window);
 
 		// ---- RENDER HUD --------------------------------------------------------- //
 		gameHUD.render(window);

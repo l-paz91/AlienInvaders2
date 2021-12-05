@@ -14,6 +14,7 @@
 
 //--INCLUDES--//
 #include <SFML/Graphics.hpp>
+#include <random>
 
 #include "HUD.h"
 #include "TextureManager.h"
@@ -44,6 +45,7 @@ namespace GameConstants
 
 	constexpr int INVADER_XSTART = 75;
 	constexpr int INVADER_YSTART = 384;
+	constexpr int INVADER_MAX_SHOTS = 3;
 
 	const sf::IntRect octopus1 = sf::IntRect(0, 0, 36, 24);
 	const sf::IntRect octopus2 = sf::IntRect(36, 0, 36, 24);
@@ -56,9 +58,12 @@ namespace GameConstants
 
 	const sf::IntRect destroyed = sf::IntRect(0, 72, 32, 24);
 
+	static int INVADER_GRID[5][11];
 	static float INVADER_SPEED = 6.0f;
 	static int INVADER_SIZE = 48;
 	static int INVADERS_DESTROYED = 0;
+	static float INVADER_SHOT_ELAPSED_TIME = 0.0f;
+	static int INVADER_TO_UPDATE = 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -106,6 +111,22 @@ namespace GameObjects
 		RectangleShape mPlayerShotRect;
 		bool mShotsFired;
 	};
+
+	// -----------------------------------------------------------------------------
+
+	struct InvaderShot
+	{
+		InvaderShot(Vector2f pPos)
+		{
+			mInvaderShotRect.setSize(Vector2f(3.0f, 12.0f));
+			mInvaderShotRect.setFillColor(Color::White);
+			mInvaderShotRect.setPosition(pPos);
+		}
+
+		RectangleShape mInvaderShotRect;
+	};
+
+	// -----------------------------------------------------------------------------
 }
 
 // -----------------------------------------------------------------------------
@@ -120,6 +141,38 @@ namespace GameFunctions
 	static bool hasSpriteCollided(const T1& pSprite1, const T2& pSprite2)
 	{
 		return pSprite1.getGlobalBounds().intersects(pSprite2.getGlobalBounds());
+	}
+
+	// -----------------------------------------------------------------------------
+
+	inline int randint(int min, int max)
+	{
+		std::default_random_engine ran((unsigned int)time(0));
+		return std::uniform_int_distribution<>{min, max}(ran);
+	}
+
+	// -----------------------------------------------------------------------------
+
+	inline int randint(int max) { return randint(0, max); }
+
+	// -----------------------------------------------------------------------------
+
+	static void initGrid()
+	{
+		for (int c = 0, i = 44; c < 11; ++c, ++i)
+			INVADER_GRID[0][c] = i;
+
+		for (int c = 0, i = 43; c < 11; ++c, --i)
+			INVADER_GRID[1][c] = i;
+
+		for (int c = 0, i = 22; c < 11; ++c, ++i)
+			INVADER_GRID[2][c] = i;
+
+		for (int c = 0, i = 21; c < 11; ++c, --i)
+			INVADER_GRID[3][c] = i;
+
+		for (int c = 0, i = 0; c < 11; ++c, ++i)
+			INVADER_GRID[4][c] = i;
 	}
 
 	// -----------------------------------------------------------------------------
@@ -211,7 +264,72 @@ namespace GameFunctions
 
 	// -----------------------------------------------------------------------------
 
-	static void moveInvaders(std::vector<GameObjects::Invader>& pInvaders)
+	static bool canInvaderShoot(const std::vector<GameObjects::Invader>& pInvaders)
+	{
+		bool invaderCanShoot = true;
+		// find invader
+		for (int r = 0; r < 5; ++r)
+		{
+			for (int c = 0; c < 11; ++c)
+			{
+				if (INVADER_GRID[r][c] == INVADER_TO_UPDATE)
+				{				
+					if (r == 4)
+					{
+						return true;
+					}
+
+					// check invaders below to see if they are destroyed
+					for (int r2 = r+1; r2 < 5; ++r2)
+					{
+						int index = INVADER_GRID[r2][c];
+						invaderCanShoot &= pInvaders[index].mDestroyed;
+					}
+					return invaderCanShoot;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------
+
+	static void updateInvaderShots(
+		  GameObjects::Invader& pInvader
+		, std::vector<GameObjects::InvaderShot>& pInvaderShots
+		, const std::vector<GameObjects::Invader>& pInvaders
+		, const float& pDeltaTime)
+	{
+		// a random invader will choose to shoot every second
+		INVADER_SHOT_ELAPSED_TIME += pDeltaTime;
+		if (INVADER_SHOT_ELAPSED_TIME >= 1 && pInvaderShots.size() < INVADER_MAX_SHOTS)
+		{
+			int shouldShoot = randint(1);
+			if (canInvaderShoot(pInvaders))
+			{
+				pInvaderShots.push_back(GameObjects::InvaderShot(pInvader.mSprite.getPosition()));
+			}
+			INVADER_SHOT_ELAPSED_TIME = 0;
+		}
+
+		// move the shot down the screen
+		for (int i = pInvaderShots.size() - 1; i >= 0; --i)
+		{
+			pInvaderShots[i].mInvaderShotRect.move(Vector2f(0, 4));
+
+			if (pInvaderShots[i].mInvaderShotRect.getPosition().y >= (GameConstants::HEIGHT - GameConstants::BOT_BANNER))
+			{
+				pInvaderShots.erase(pInvaderShots.begin() + i);
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+
+	static void updateInvaders(std::vector<GameObjects::Invader>& pInvaders
+		, std::vector<GameObjects::InvaderShot>& pInvaderShots
+		, const float& pDeltaTime)
 	{
 		using namespace GameObjects;
 
@@ -220,20 +338,22 @@ namespace GameFunctions
 
 		// all invaders must have moved in 55 frames (1 each)
 		// this is why the invaders speed up as they are destroyed
-		// as each invader can be updated more times in 1 second
-		static int invaderToUpdate = 0;
+		// as each invader can be updated more times in 1 second	
 
 		// skip updating invaders that have been destroyed
-		while (pInvaders[invaderToUpdate].mDestroyed && INVADERS_DESTROYED < 55)
+		while (pInvaders[INVADER_TO_UPDATE].mDestroyed && INVADERS_DESTROYED < 55)
 		{
-			++invaderToUpdate;
-			if (invaderToUpdate == pInvaders.size())
+			++INVADER_TO_UPDATE;
+			if (INVADER_TO_UPDATE == pInvaders.size())
 			{
-				invaderToUpdate = 0;
+				INVADER_TO_UPDATE = 0;
 			}
 		}
 
-		Invader& invader = pInvaders[invaderToUpdate];
+		Invader& invader = pInvaders[INVADER_TO_UPDATE];
+
+		// allow the invader a chance to shoot if it's not blocked
+		updateInvaderShots(invader, pInvaderShots, pInvaders, pDeltaTime);
 		
 		// move it over
 		invader.mSprite.move(Vector2f(INVADER_SPEED, 0));
@@ -251,14 +371,14 @@ namespace GameFunctions
 			// set reverse speed
 			INVADER_SPEED *= -1.0f;
 
-			invaderToUpdate = 0;
+			INVADER_TO_UPDATE = 0;
 			return;
 		}
 
-		++invaderToUpdate;
-		if (invaderToUpdate == pInvaders.size())
+		++INVADER_TO_UPDATE;
+		if (INVADER_TO_UPDATE == pInvaders.size())
 		{
-			invaderToUpdate = 0;
+			INVADER_TO_UPDATE = 0;
 		}
 	}
 
@@ -300,7 +420,8 @@ namespace GameFunctions
 
 	// -----------------------------------------------------------------------------
 
-	static void hasPlayerHitInvader(GameObjects::PlayerShot& pShot
+	static void hasPlayerHitInvader(
+		  GameObjects::PlayerShot& pShot
 		, std::vector<GameObjects::Invader>& pInvaders
 		, HUD& pGameHud)
 	{
@@ -336,6 +457,14 @@ namespace GameFunctions
 	}
 
 	// -----------------------------------------------------------------------------
+
+	static void drawInvaderShots(const std::vector<GameObjects::InvaderShot>& pInvaderShots, sf::RenderWindow& pWindow)
+	{
+		for (const GameObjects::InvaderShot& shot : pInvaderShots)
+		{
+			pWindow.draw(shot.mInvaderShotRect);
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
