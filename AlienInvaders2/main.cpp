@@ -71,7 +71,7 @@ int main()
 		GameFunctions::moveInvaders(invaders);
 
 		GameFunctions::updatePlayerShot(playerShot, playerSprite.getPosition().x, dt.asSeconds());
-		GameFunctions::hasPlayerHitInvader(playerShot, invaders);
+		GameFunctions::hasPlayerHitInvader(playerShot, invaders, gameHUD);
 
 		
 		// ---- UPDATE HUD --------------------------------------------------------- //

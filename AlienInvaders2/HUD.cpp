@@ -1,7 +1,9 @@
 // -----------------------------------------------------------------------------
 
 //--INCLUDES--//
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "GameConstants.h"
@@ -43,7 +45,9 @@ HUD::HUD()
 	setTextUp(mLivesText, Vector2f(LEFT_EDGE, 723.0f), "3");
 	setTextUp(mCreditText, Vector2f(411.0f, 723.0f), "C R E D I T   0 0");
 
-	setTextUp(mScore1, Vector2f(75.0f, 75.0f), "0 0 0 0");
+	setTextUp(mScore1, Vector2f(75.0f, 75.0f), "0000");
+	mScore1.setLetterSpacing(4);
+
 	setTextUp(mScore2, Vector2f(501.0f, 75.0f), "0 0 0 0");
 	setTextUp(mHiScore, Vector2f(267.0f, 75.0f), "0 0 0 0");
 
@@ -56,6 +60,8 @@ HUD::HUD()
 
 	mLifeSprite2 = Sprite(TextureManager::getTexture("Graphics/player.png"));
 	mLifeSprite2.setPosition(Vector2f(126.0f, 720.f));
+
+	mScoreP1 = 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -103,6 +109,17 @@ void HUD::setTextUp(Text& pText, const Vector2f& pPos, const std::string& pMsg /
 	pText.setCharacterSize(21);
 	pText.setFillColor(Color::White);
 	pText.setString(pMsg);
+}
+
+// -----------------------------------------------------------------------------
+
+void HUD::updatePlayer1Score(int pScore)
+{
+	mScoreP1 += pScore;
+	std::stringstream ss;
+	ss << std::setfill('0') << std::setw(4) << mScoreP1;
+
+	mScore1.setString(ss.str());
 }
 
 // -----------------------------------------------------------------------------

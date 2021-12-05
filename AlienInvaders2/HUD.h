@@ -16,6 +16,8 @@ struct HUD
 	void render(sf::RenderWindow& pWindow);
 	void setTextUp(sf::Text& pText, const sf::Vector2f& pPos, const std::string& pMsg = "");
 
+	void updatePlayer1Score(int pScore);
+
 	sf::View mView;
 	sf::Font mFont;
 
@@ -32,6 +34,8 @@ struct HUD
 	sf::RectangleShape mGreenBar;
 	sf::Sprite mLifeSprite1;
 	sf::Sprite mLifeSprite2;
+
+	int mScoreP1;
 };
 
 // -----------------------------------------------------------------------------

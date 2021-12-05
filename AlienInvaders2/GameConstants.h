@@ -15,6 +15,7 @@
 //--INCLUDES--//
 #include <SFML/Graphics.hpp>
 
+#include "HUD.h"
 #include "TextureManager.h"
 
 // -----------------------------------------------------------------------------
@@ -299,7 +300,9 @@ namespace GameFunctions
 
 	// -----------------------------------------------------------------------------
 
-	static void hasPlayerHitInvader(GameObjects::PlayerShot& pShot, std::vector<GameObjects::Invader>& pInvaders)
+	static void hasPlayerHitInvader(GameObjects::PlayerShot& pShot
+		, std::vector<GameObjects::Invader>& pInvaders
+		, HUD& pGameHud)
 	{
 		// ignore the collision if the alien has already been destroyed
 		// we don't remove sprites from the vector - just hide them
@@ -313,8 +316,21 @@ namespace GameFunctions
 
 				// move the shot out of the way so it doesn't collide with other invaders
 				pShot.mPlayerShotRect.setPosition(Vector2f(0, 0));
-
 				pShot.mShotsFired = false;
+
+				// increase the score
+				switch (i.mType)
+				{
+				case GameObjects::InvaderType::eOCTOPUS:
+					pGameHud.updatePlayer1Score(10);
+					break;
+				case GameObjects::InvaderType::eCRAB:
+					pGameHud.updatePlayer1Score(20);
+					break;
+				case GameObjects::InvaderType::eSQUID:
+					pGameHud.updatePlayer1Score(30);
+					break;
+				}
 			}
 		}
 	}
