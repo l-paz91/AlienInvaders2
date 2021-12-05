@@ -53,13 +53,21 @@ int main()
 			}
 		}
 
+		// end the game for now
+		if (GameConstants::INVADERS_DESTROYED == 55)
+		{
+			break;
+		}
+
 		// ---- CLEAR SCREEN ------------------------------------------------------- //
 		window.clear();
 
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
 		GameFunctions::movePlayer(playerSprite, dt.asSeconds());
 		GameFunctions::moveInvaders(invaders);
+
 		GameFunctions::updatePlayerShot(playerShot, playerSprite.getPosition().x, dt.asSeconds());
+		GameFunctions::hasPlayerHitInvader(playerShot, invaders);
 
 		
 		// ---- UPDATE HUD --------------------------------------------------------- //

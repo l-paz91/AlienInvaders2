@@ -54,6 +54,7 @@ namespace GameConstants
 
 	static float INVADER_SPEED = 6.0f;
 	static int INVADER_SIZE = 48;
+	static int INVADERS_DESTROYED = 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -78,10 +79,12 @@ namespace GameObjects
 		Invader()
 			: mSprite(Sprite(TextureManager::getTexture("Graphics/InvaderSpritesheet.png")))
 			, mType(InvaderType::eOCTOPUS)
+			, mDestroyed(false)
 		{}
 
 		Sprite mSprite;
 		InvaderType mType;
+		bool mDestroyed;
 	};
 
 	// -----------------------------------------------------------------------------
@@ -106,6 +109,14 @@ namespace GameObjects
 namespace GameFunctions
 {
 	using namespace GameConstants;
+
+	// -----------------------------------------------------------------------------
+
+	template<typename T1, typename T2>
+	static bool hasSpriteCollided(const T1& pSprite1, const T2& pSprite2)
+	{
+		return pSprite1.getGlobalBounds().intersects(pSprite2.getGlobalBounds());
+	}
 
 	// -----------------------------------------------------------------------------
 
@@ -143,7 +154,8 @@ namespace GameFunctions
 	{
 		for (const GameObjects::Invader& i : pInvaders)
 		{
-			pWindow.draw(i.mSprite);
+			if(!i.mDestroyed)
+				pWindow.draw(i.mSprite);
 		}
 	}
 
@@ -205,8 +217,18 @@ namespace GameFunctions
 		// all invaders must have moved in 55 frames (1 each)
 		// this is why the invaders speed up as they are destroyed
 		// as each invader can be updated more times in 1 second
-
 		static int invaderToUpdate = 0;
+
+		// skip updating invaders that have been destroyed
+		while (pInvaders[invaderToUpdate].mDestroyed && INVADERS_DESTROYED < 55)
+		{
+			++invaderToUpdate;
+			if (invaderToUpdate == pInvaders.size())
+			{
+				invaderToUpdate = 0;
+			}
+		}
+
 		Invader& invader = pInvaders[invaderToUpdate];
 		
 		// move it over
@@ -276,9 +298,25 @@ namespace GameFunctions
 
 	static void hasPlayerHitInvader(GameObjects::PlayerShot& pShot, std::vector<GameObjects::Invader>& pInvaders)
 	{
+		// ignore the collision if the alien has already been destroyed
+		// we don't remove sprites from the vector - just hide them
+		for (GameObjects::Invader& i : pInvaders)
+		{
+			if (!i.mDestroyed && hasSpriteCollided(pShot.mPlayerShotRect, i.mSprite))
+			{
+				++INVADERS_DESTROYED;
 
+				i.mDestroyed = true;
+
+				// move the shot out of the way so it doesn't collide with other invaders
+				pShot.mPlayerShotRect.setPosition(Vector2f(0, 0));
+
+				pShot.mShotsFired = false;
+			}
+		}
 	}
 
+	// -----------------------------------------------------------------------------
 }
 
 // -----------------------------------------------------------------------------
