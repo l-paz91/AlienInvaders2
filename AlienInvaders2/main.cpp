@@ -31,7 +31,7 @@ int main()
 	playerSprite.setPosition(GameConstants::HALFW, GameConstants::PLAYER_Y);
 
 	// ---- INVADERS
-	GameObjects::Invader invaders[5][11];	// 5 rows, 11 columns 
+	std::vector<GameObjects::Invader> invaders(55);	
 	GameFunctions::initInvaders(invaders);
 
 	// start the game loop
@@ -56,6 +56,7 @@ int main()
 
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
 		GameFunctions::movePlayer(playerSprite, dt.asSeconds());
+		GameFunctions::moveInvaders(invaders);
 		
 		// ---- UPDATE HUD --------------------------------------------------------- //
 

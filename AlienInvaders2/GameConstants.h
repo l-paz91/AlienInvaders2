@@ -40,7 +40,7 @@ namespace GameConstants
 	constexpr int BARRIER_GAP = 69;
 
 	constexpr int INVADER_XSTART = 75;
-	constexpr int INVADER_YSTART = 192;
+	constexpr int INVADER_YSTART = 384;
 	const sf::IntRect octopus1 = sf::IntRect(0, 0, 36, 24);
 	const sf::IntRect octopus2 = sf::IntRect(36, 0, 36, 24);
 
@@ -51,6 +51,9 @@ namespace GameConstants
 	const sf::IntRect squid2 = sf::IntRect(36, 48, 24, 24);
 
 	const sf::IntRect destroyed = sf::IntRect(0, 72, 32, 24);
+
+	static float INVADER_SPEED = 6.0f;
+	static int INVADER_SIZE = 48;
 }
 
 // -----------------------------------------------------------------------------
@@ -120,69 +123,102 @@ namespace GameFunctions
 
 	// -----------------------------------------------------------------------------
 
-	template <size_t rows, size_t cols>
-	static void drawInvaders(const GameObjects::Invader (&pInvaders)[rows][cols], sf::RenderWindow& pWindow)
+	static void drawInvaders(const std::vector<GameObjects::Invader>& pInvaders, sf::RenderWindow& pWindow)
 	{
-		for (const auto& invaderRow : pInvaders)
+		for (const GameObjects::Invader& i : pInvaders)
 		{
-			for (const auto& invader : invaderRow)
-			{
-				pWindow.draw(invader.mSprite);
-			}
+			pWindow.draw(i.mSprite);
 		}
 	}
 
 	// -----------------------------------------------------------------------------
 
-	template <size_t rows, size_t cols>
-	static void initInvaders(GameObjects::Invader(&pInvaders)[rows][cols])
+	static void initInvaders(std::vector<GameObjects::Invader>& pInvaders)
 	{
+		using namespace GameObjects;
+
 		float x = INVADER_XSTART;
 		float y = INVADER_YSTART;
 
-		// row 1
-		for (int c = 0; c < 11; ++c)
+		// rows 0 & 1
+		for (uint32_t i = 0; i < 22; ++i)
 		{
-			pInvaders[0][c].mSprite.setTextureRect(squid2);
-			pInvaders[0][c].mSprite.setPosition(Vector2f(x, y));
-			x += 48;
+			pInvaders[i].mSprite.setTextureRect(octopus2);
+			pInvaders[i].mType = InvaderType::eOCTOPUS;
 		}
 
-		y += 48;
-		x = INVADER_XSTART;
-
-		// row 2 & 3
-		for (int r = 1; r < 3; ++r)
+		// rows 2 & 3
+		for (uint32_t i = 22; i < 44; ++i)
 		{
-			for (int c = 0; c < 11; ++c)
+			pInvaders[i].mSprite.setTextureRect(crab2);
+			pInvaders[i].mType = InvaderType::eCRAB;
+		}
+
+		// row 4
+		for (uint32_t i = 44; i < 55; ++i)
+		{
+			pInvaders[i].mSprite.setTextureRect(squid2);
+			pInvaders[i].mType = InvaderType::eSQUID;
+		}
+
+		// set positions
+		for (uint32_t i = 0; i < pInvaders.size(); ++i)
+		{
+			// start a new row after 11 invaders
+			if (i % 11 == 0 && (i != 0))
 			{
-				pInvaders[r][c].mSprite.setTextureRect(crab2);
-				pInvaders[r][c].mSprite.setPosition(Vector2f(x, y));
-				x += 48;
+				y -= 48;
+				x -= INVADER_SIZE;
+				INVADER_SIZE *= -1;			
 			}
 
-			y += 48;
-			x = INVADER_XSTART;
+			pInvaders[i].mSprite.setPosition(Vector2f(x, y));
+			x += INVADER_SIZE;
 		}
-
-		// row 4 & 5
-		for (int r = 3; r < 5; ++r)
-		{
-			for (int c = 0; c < 11; ++c)
-			{
-				pInvaders[r][c].mSprite.setTextureRect(octopus2);
-				pInvaders[r][c].mSprite.setPosition(Vector2f(x, y));
-				x += 48;
-			}
-
-			y += 48;
-			x = INVADER_XSTART;
-		}
-
 	}
 
 	// -----------------------------------------------------------------------------
 
+	static void moveInvaders(std::vector<GameObjects::Invader>& pInvaders)
+	{
+		using namespace GameObjects;
+
+		// invaders move in time from the bottom left-hand invader in a snake-like pattern
+		// up to the top right-hand invader
+
+		// all invaders must have moved in 55 frames (1 each)
+		// this is why the invaders speed up as they are destroyed
+		// as each invader can be updated more times in 1 second
+
+		static int invaderToUpdate = 0;
+		Invader& invader = pInvaders[invaderToUpdate];
+		
+		// move it over
+		invader.mSprite.move(Vector2f(INVADER_SPEED, 0));
+
+		// check to see if an alien has hit an edge
+		const float x = invader.mSprite.getPosition().x;
+		if (x <= LEFT_EDGE || x >= RIGHT_EDGE - 48)
+		{
+			// drop the aliens by 1 row
+			for (Invader& i : pInvaders)
+			{
+				i.mSprite.move(Vector2f(0, 24));
+			}
+
+			// set reverse speed
+			INVADER_SPEED *= -1.0f;
+
+			invaderToUpdate = 0;
+			return;
+		}
+
+		++invaderToUpdate;
+		if (invaderToUpdate == pInvaders.size())
+		{
+			invaderToUpdate = 0;
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
