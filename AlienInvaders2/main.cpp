@@ -27,7 +27,7 @@ int main()
 
 	// ---- SPRITES
 	Sprite playerSprite(Sprite(TextureManager::getTexture("Graphics/player.png")));
-	playerSprite.setOrigin(20, 0); // top middle
+	playerSprite.setOrigin(GameConstants::PLAYER_OFFSET, 0); // top middle
 	playerSprite.setPosition(GameConstants::HALFW, GameConstants::PLAYER_Y);
 
 	// start the game loop
@@ -51,8 +51,8 @@ int main()
 		window.clear();
 
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
-
-
+		GameFunctions::movePlayer(playerSprite, dt.asSeconds());
+		
 		// ---- UPDATE HUD --------------------------------------------------------- //
 
 

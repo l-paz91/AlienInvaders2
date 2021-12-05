@@ -23,19 +23,63 @@ namespace GameConstants
 	constexpr int HALFW = WIDTH / 2;
 	constexpr int HALFH = HEIGHT / 2;
 
+	constexpr int TOP_BANNER = 99;
+	constexpr int BOT_BANNER = 51;
+	constexpr int LEFT_EDGE = 27;
+	constexpr int RIGHT_EDGE = WIDTH - LEFT_EDGE;
+
 	constexpr int PLAYER_Y = 648;
+	constexpr int PLAYER_OFFSET = 20;
+	constexpr int PLAYER_MINX = LEFT_EDGE + PLAYER_OFFSET;
+	constexpr int PLAYER_MAXX = RIGHT_EDGE - PLAYER_OFFSET;
+	constexpr int PLAYER_SPEED = 180;
+
 	constexpr int BARRIER_Y = 576;
 	constexpr int BARRIER1_X = 96;
 	constexpr int BARRIER_GAP = 69;
 
 	constexpr int INVADER_YSTART = 192;
+}
 
-	constexpr float TOP_BANNER = 99;
-	constexpr float BOT_BANNER = 51;
-	constexpr float LEFT_EDGE = 27;
-	constexpr float RIGHT_EDGE = WIDTH - LEFT_EDGE;
+// -----------------------------------------------------------------------------
 
-	constexpr float PLAYER_SPEED = 180;
+namespace GameFunctions
+{
+	using namespace GameConstants;
+
+	// -----------------------------------------------------------------------------
+
+	static void movePlayer(sf::Sprite& pPlayer, const float& pDeltaTime)
+	{
+		using namespace sf;
+
+		// player can only move on X axis
+		const Vector2f& pos = pPlayer.getPosition();
+
+		const bool left = Keyboard::isKeyPressed(Keyboard::Left);
+		const bool a = Keyboard::isKeyPressed(Keyboard::A);
+		if (left || a)
+		{
+			if (!(pos.x <= PLAYER_MINX))
+			{
+				pPlayer.move(-PLAYER_SPEED * pDeltaTime, 0);
+			}
+		}
+
+		const bool right = Keyboard::isKeyPressed(Keyboard::Right);
+		const bool d = Keyboard::isKeyPressed(Keyboard::D);
+		if (right || d)
+		{
+			if (!(pos.x >= PLAYER_MAXX))
+			{
+				pPlayer.move(PLAYER_SPEED * pDeltaTime, 0);
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------------
+
+
 }
 
 // -----------------------------------------------------------------------------
