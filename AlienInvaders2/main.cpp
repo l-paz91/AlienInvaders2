@@ -25,10 +25,14 @@ int main()
 	// clock for timing
 	Clock clock;
 
-	// ---- SPRITES
+	// ---- PLAYER
 	Sprite playerSprite(Sprite(TextureManager::getTexture("Graphics/player.png")));
 	playerSprite.setOrigin(GameConstants::PLAYER_OFFSET, 0); // top middle
 	playerSprite.setPosition(GameConstants::HALFW, GameConstants::PLAYER_Y);
+
+	// ---- INVADERS
+	GameObjects::Invader invaders[5][11];	// 5 rows, 11 columns 
+	GameFunctions::initInvaders(invaders);
 
 	// start the game loop
 	while (window.isOpen())
@@ -58,6 +62,7 @@ int main()
 
 		// ---- RENDER OBJECTS ----------------------------------------------------- //
 		window.draw(playerSprite);
+		GameFunctions::drawInvaders(invaders, window);
 
 		// ---- RENDER HUD --------------------------------------------------------- //
 
