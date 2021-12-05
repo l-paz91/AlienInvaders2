@@ -13,6 +13,8 @@
 */
 
 //--INCLUDES--//
+#include <SFML/Graphics.hpp>
+
 #include "TextureManager.h"
 
 // -----------------------------------------------------------------------------
@@ -41,6 +43,7 @@ namespace GameConstants
 
 	constexpr int INVADER_XSTART = 75;
 	constexpr int INVADER_YSTART = 384;
+
 	const sf::IntRect octopus1 = sf::IntRect(0, 0, 36, 24);
 	const sf::IntRect octopus2 = sf::IntRect(36, 0, 36, 24);
 

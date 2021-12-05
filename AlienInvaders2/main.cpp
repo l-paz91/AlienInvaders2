@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "GameConstants.h"
+#include "HUD.h"
 #include "TextureManager.h"
 
 // -----------------------------------------------------------------------------
@@ -35,6 +36,9 @@ int main()
 	// ---- INVADERS
 	std::vector<GameObjects::Invader> invaders(55);	
 	GameFunctions::initInvaders(invaders);
+
+	// ---- HUD
+	HUD gameHUD;
 
 	// start the game loop
 	while (window.isOpen())
@@ -71,7 +75,7 @@ int main()
 
 		
 		// ---- UPDATE HUD --------------------------------------------------------- //
-
+		gameHUD.update();
 
 		// ---- RENDER OBJECTS ----------------------------------------------------- //
 		window.draw(playerSprite);
@@ -79,7 +83,7 @@ int main()
 		GameFunctions::drawPlayerShot(playerShot, window);
 
 		// ---- RENDER HUD --------------------------------------------------------- //
-
+		gameHUD.render(window);
 
 		// ---- DISPLAY WINDOW ----------------------------------------------------- //
 		window.display();
