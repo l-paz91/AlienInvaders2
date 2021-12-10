@@ -142,7 +142,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameManager.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="HUD.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
+    <ClCompile Include="Invaders.cpp">
       <SubType>
       </SubType>
     </ClCompile>
@@ -156,7 +164,15 @@
       <SubType>
       </SubType>
     </ClInclude>
+    <ClInclude Include="GameManager.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="HUD.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
+    <ClInclude Include="Invaders.h">
       <SubType>
       </SubType>
     </ClInclude>

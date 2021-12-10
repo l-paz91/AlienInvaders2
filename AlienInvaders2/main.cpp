@@ -4,8 +4,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "GameConstants.h"
-#include "HUD.h"
-#include "TextureManager.h"
+#include "GameManager.h"
 
 // -----------------------------------------------------------------------------
 
@@ -18,7 +17,7 @@ int main()
 	using namespace sf;
 
 	// create the main window
-	RenderWindow window(VideoMode(GameConstants::WIDTH, GameConstants::HEIGHT), "Alien Invaders Window");
+	RenderWindow window(VideoMode(GameGlobals::WIDTH, GameGlobals::HEIGHT), "Alien Invaders Window");
 
 	// set framerate - Original Space Invaders ran at 60Hz so we want to try and mimic that
 	window.setFramerateLimit(60);
@@ -26,22 +25,8 @@ int main()
 	// clock for timing
 	Clock clock;
 
-	// ---- PLAYER
-	Sprite playerSprite(Sprite(TextureManager::getTexture("Graphics/player.png")));
-	playerSprite.setOrigin(GameConstants::PLAYER_OFFSET, 0); // top middle
-	playerSprite.setPosition(GameConstants::HALFW, GameConstants::PLAYER_Y);
-
-	GameObjects::PlayerShot playerShot;
-
-	// ---- INVADERS
-	std::vector<GameObjects::Invader> invaders(55);	
-	GameFunctions::initInvaders(invaders);
-	GameFunctions::initGrid();
-
-	std::vector<GameObjects::InvaderShot> invaderShots;
-
-	// ---- HUD
-	HUD gameHUD;
+	// ---- GAME MANAGER
+	GameManager gameManager;
 
 	// start the game loop
 	while (window.isOpen())
@@ -60,34 +45,20 @@ int main()
 			}
 		}
 
-		// end the game for now
-		if (GameConstants::INVADERS_DESTROYED == 55)
-		{
-			break;
-		}
-
 		// ---- CLEAR SCREEN ------------------------------------------------------- //
 		window.clear();
 
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
-		GameFunctions::movePlayer(playerSprite, dt.asSeconds());
-		GameFunctions::updatePlayerShot(playerShot, playerSprite.getPosition().x, dt.asSeconds());
-		GameFunctions::hasPlayerHitInvader(playerShot, invaders, gameHUD);
-		
-		GameFunctions::updateInvaders(invaders, invaderShots, dt.asSeconds());
+		gameManager.mInvaders.update(dt.asSeconds());
 	
 		// ---- UPDATE HUD --------------------------------------------------------- //
-		gameHUD.update();
+		gameManager.mGameHUD.update();
 
 		// ---- RENDER OBJECTS ----------------------------------------------------- //
-		window.draw(playerSprite);
-		GameFunctions::drawPlayerShot(playerShot, window);
-
-		GameFunctions::drawInvaders(invaders, window);
-		GameFunctions::drawInvaderShots(invaderShots, window);
+		gameManager.mInvaders.render(window);
 
 		// ---- RENDER HUD --------------------------------------------------------- //
-		gameHUD.render(window);
+		gameManager.mGameHUD.render(window);
 
 		// ---- DISPLAY WINDOW ----------------------------------------------------- //
 		window.display();
