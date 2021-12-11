@@ -161,36 +161,6 @@ void Invaders::moveAndAnimate(const float& pDeltaTime)
 	invader.mSprite.move((float)mInvaderSpeed, 0);
 
 	invader.animate();
-}
-
-// -----------------------------------------------------------------------------
-
-bool Invaders::canShoot()
-{
-	if (mInvaderToUpdateRow == 0)
-	{
-		return true;
-	}
-
-	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
-
-	bool invaderCanShoot = true;
-
-	// an invader can only shoot if there is nothing below it
-	for (int row = mInvaderToUpdateRow; row >= 0; --row)
-	{
-		// as this is recursive, if it becomes false, &= won't change it back to true again
-		invaderCanShoot &= mInvaders[row][mInvaderToUpdateColumn].mDestroyed;
-	}
-
-	return invaderCanShoot;
-}
-
-// -----------------------------------------------------------------------------
-
-void Invaders::checkForCollisions()
-{
-	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
 
 	// check to see if an invader has hit an edge
 	const float x = invader.mSprite.getPosition().x;
@@ -202,27 +172,53 @@ void Invaders::checkForCollisions()
 
 // -----------------------------------------------------------------------------
 
-void Invaders::setNextInvaderToUpdate()
+bool Invaders::canShoot()
 {
-	// move to the next invader
-	++mInvaderToUpdateColumn;
-	if (mInvaderToUpdateColumn == 11)
+	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
+
+	if (mInvaderToUpdateRow == 0 && !invader.mDestroyed)
 	{
-		mInvaderToUpdateColumn = 0;
-		++mInvaderToUpdateRow;
-
-		if (mInvaderToUpdateRow == 5)
-		{
-			// now all invaders have been updated, drop a row if needed
-			if (mEdgeHitFlag)
-			{
-				dropInvaders();
-				mEdgeHitFlag = false;
-			}
-
-			mInvaderToUpdateRow = 0;
-		}
+		return true;
 	}
+
+	bool invaderCanShoot = true;
+
+	// an invader can only shoot if there is nothing below it
+	for (int row = mInvaderToUpdateRow - 1; row >= 0; --row)
+	{
+		// as this is a loop, if it becomes false, &= won't change it back to true again
+		invaderCanShoot &= mInvaders[row][mInvaderToUpdateColumn].mDestroyed;
+	}
+
+	return invaderCanShoot;
+}
+
+// -----------------------------------------------------------------------------
+
+void Invaders::setNextInvaderToUpdate(const int& pInvadersDestroyed)
+{
+	do
+	{
+		// move to the next invader
+		++mInvaderToUpdateColumn;
+		if (mInvaderToUpdateColumn == 11)
+		{
+			mInvaderToUpdateColumn = 0;
+			++mInvaderToUpdateRow;
+
+			if (mInvaderToUpdateRow == 5)
+			{
+				// now all invaders have been updated, drop a row if needed
+				if (mEdgeHitFlag)
+				{
+					dropInvaders();
+					mEdgeHitFlag = false;
+				}
+
+				mInvaderToUpdateRow = 0;
+			}
+		}	
+	} while (getCurrentInvader().mDestroyed && pInvadersDestroyed < 55);
 }
 
 // -----------------------------------------------------------------------------
@@ -233,7 +229,10 @@ void Invaders::render(sf::RenderWindow& pWindow)
 	{
 		for (const auto& invader : row)
 		{
-			pWindow.draw(invader.mSprite);
+			if (!invader.mDestroyed)
+			{
+				pWindow.draw(invader.mSprite);
+			}
 		}
 	}
 }

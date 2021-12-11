@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
-#ifndef InvaderMissiles_H
-#define InvaderMissiles_H
+#ifndef Player_H
+#define Player_H
 // -----------------------------------------------------------------------------
 
 //--INCLUDES--//
@@ -8,26 +8,35 @@
 
 // -----------------------------------------------------------------------------
 
-enum InvaderMissileType
+struct PlayerCannonShot
 {
-	eROLLING,	// slowest, least powerful - targets player
-	ePLUNGER,	// faster, more powerful   - disabled when only 1 invader left
-	eZIGZAG		// most powerful		   - disabled when flying saucer is on screen
+	PlayerCannonShot();
+
+	void render(sf::RenderWindow& pWindow);
+
+	sf::RectangleShape mRect;
+	bool mShotFired;
 };
 
 // -----------------------------------------------------------------------------
 
-struct InvaderMissile
+struct PlayerCannon
 {
-	InvaderMissile(const sf::Vector2f& pPos);
+	PlayerCannon();
 
-	void updateMissile();
+	void moveFromInput(const float& pDeltaTime);
+	void render(sf::RenderWindow& pWindow);
 
-	sf::RectangleShape mMissile;
-	bool mDestroyed;
+	const sf::Vector2f& getPos() const { mSprite.getPosition(); }
+
+	void shoot();
+	void updateCannonShot(const float& pDeltaTime);
+
+	sf::Sprite mSprite;
+	PlayerCannonShot mPlayerCannonShot;
 };
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-#endif // !InvaderMissiles_H
+#endif // !Player_H

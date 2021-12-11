@@ -51,21 +51,22 @@ int main()
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
 
 		// ---- movement / input updates
+		gameManager.mPlayerCannon.moveFromInput(dt.asSeconds());
+		gameManager.mPlayerCannon.shoot();
+		gameManager.mPlayerCannon.updateCannonShot(dt.asSeconds());
+		gameManager.hasPlayerHitInvader();
+
 		gameManager.mInvaders.moveAndAnimate(dt.asSeconds());	
 		gameManager.InvaderTryShoot(dt.asSeconds());
-		gameManager.moveMissiles();
+		gameManager.updateMissiles();
 
-		// ---- physics updates
-		gameManager.mInvaders.checkForCollisions();
-		gameManager.missileCollisionCheck();
-
-		// ---- final updates
-		gameManager.mInvaders.setNextInvaderToUpdate();
+		gameManager.mInvaders.setNextInvaderToUpdate(gameManager.mInvadersDestroyed);
 	
 		// ---- UPDATE HUD --------------------------------------------------------- //
 		gameManager.mGameHUD.update();
 
 		// ---- RENDER OBJECTS ----------------------------------------------------- //
+		gameManager.mPlayerCannon.render(window);
 		gameManager.mInvaders.render(window);
 		gameManager.renderMissiles(window);
 

@@ -19,27 +19,15 @@ InvaderMissile::InvaderMissile(const sf::Vector2f& pPos)
 
 // -----------------------------------------------------------------------------
 
-void InvaderMissile::moveMissile()
+void InvaderMissile::updateMissile()
 {
 	mMissile.move(0, 4.0f);
-}
 
-// -----------------------------------------------------------------------------
-
-void InvaderMissile::checkForCollisions()
-{
 	// did it hit the bottom banner?
 	if (mMissile.getPosition().y >= (GameGlobals::HEIGHT - GameGlobals::BOT_BANNER))
 	{
 		mDestroyed = true;
-		return;
 	}
-
-	// did it hit a barrier?
-
-	// did it hit the player?
-
-	// did it hit a player shot?
 }
 
 // -----------------------------------------------------------------------------

@@ -40,17 +40,16 @@ struct Invaders
 	void init();
 	void moveAndAnimate(const float& pDeltaTime);
 	bool canShoot();
-	void checkForCollisions();
-	void setNextInvaderToUpdate();
+	void setNextInvaderToUpdate(const int& pInvadersDestroyed);
 
 	void render(sf::RenderWindow& pWindow);
 
+	Invader& getCurrentInvader() { return mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn]; }
 	const sf::Vector2f& getPosOfCurrentInvader() { return mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn].mSprite.getPosition(); }
 
+	std::vector<std::vector<Invader>> mInvaders;
 private:
 	void dropInvaders();
-
-	std::vector<std::vector<Invader>> mInvaders;
 
 	int mInvaderToUpdateRow;
 	int mInvaderToUpdateColumn;

@@ -8,7 +8,9 @@
 GameManager::GameManager()
 	: mGameHUD()
 	, mInvaders()
+	, mPlayerCannon()
 	, mInvadersMissiles()
+	, mInvadersDestroyed(0)
 	, mInvaderMaxShots(3)
 	, mInvaderMissileElapsedTime(0.0f)
 {
@@ -22,8 +24,8 @@ void GameManager::InvaderTryShoot(const float& pDeltaTime)
 	mInvaderMissileElapsedTime += pDeltaTime;
 	if (mInvaders.canShoot())
 	{
-		// currently a random invader will choose to shoot every second
-		if (mInvaderMissileElapsedTime >= 1 && (int)mInvadersMissiles.size() < mInvaderMaxShots)
+		// currently an invader will choose to shoot every second
+		if (mInvaderMissileElapsedTime >= 1.0f && (int)mInvadersMissiles.size() <= mInvaderMaxShots)
 		{
 			mInvadersMissiles.push_back(InvaderMissile(mInvaders.getPosOfCurrentInvader()));
 			mInvaderMissileElapsedTime = 0.0f;
@@ -35,21 +37,22 @@ void GameManager::InvaderTryShoot(const float& pDeltaTime)
 
 // -----------------------------------------------------------------------------
 
-void GameManager::moveMissiles()
+void GameManager::updateMissiles()
 {
 	for (auto& missile : mInvadersMissiles)
 	{
-		missile.moveMissile();
+		missile.updateMissile();
 	}
+
+	cleanUpMissiles();
 }
 
 // -----------------------------------------------------------------------------
 
-void GameManager::missileCollisionCheck()
+void GameManager::cleanUpMissiles()
 {
 	for (int i = mInvadersMissiles.size()-1; i >= 0; --i)
 	{
-		mInvadersMissiles[i].checkForCollisions();
 		if (mInvadersMissiles[i].mDestroyed)
 		{
 			mInvadersMissiles.erase(mInvadersMissiles.begin() + i);
@@ -65,6 +68,47 @@ void GameManager::renderMissiles(sf::RenderWindow& pWindow)
 	{
 		pWindow.draw(missile.mMissile);
 	}
+}
+
+// -----------------------------------------------------------------------------
+
+void GameManager::hasPlayerHitInvader()
+{
+	// ignore the collision if the alien has already been destroyed
+	// we don't remove sprites from the vector - just hide them
+	PlayerCannonShot& playerShot = mPlayerCannon.mPlayerCannonShot;
+
+	for (auto& row : mInvaders.mInvaders)
+	{
+		for (auto& invader : row)
+		{
+			if (!invader.mDestroyed && hasSpriteCollided(playerShot.mRect, invader.mSprite))
+			{
+				++mInvadersDestroyed;
+				invader.mDestroyed = true;
+				playerShot.mRect.setPosition(0, 0);
+				playerShot.mShotFired = false;
+
+				// increase the score
+				switch (invader.mType)
+				{
+				case InvaderType::eOCTOPUS:
+					mGameHUD.updatePlayer1Score(10);
+					break;
+				case InvaderType::eCRAB:
+					mGameHUD.updatePlayer1Score(20);
+					break;
+				case InvaderType::eSQUID:
+					mGameHUD.updatePlayer1Score(30);
+					break;
+				}
+
+				return;
+			}
+		}
+	}
+
+
 }
 
 // -----------------------------------------------------------------------------
