@@ -24,7 +24,6 @@ struct Invader
 	Invader();
 
 	void animate();
-	void move(float x, float y);
 
 	sf::Sprite mSprite;
 	InvaderType mType;
@@ -39,8 +38,14 @@ struct Invaders
 	Invaders();
 
 	void init();
-	void update(const float& pDeltaTime);
+	void moveAndAnimate(const float& pDeltaTime);
+	bool canShoot();
+	void checkForCollisions();
+	void setNextInvaderToUpdate();
+
 	void render(sf::RenderWindow& pWindow);
+
+	const sf::Vector2f& getPosOfCurrentInvader() { return mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn].mSprite.getPosition(); }
 
 private:
 	void dropInvaders();

@@ -49,13 +49,25 @@ int main()
 		window.clear();
 
 		// ---- UPDATE OBJECTS ----------------------------------------------------- //
-		gameManager.mInvaders.update(dt.asSeconds());
+
+		// ---- movement / input updates
+		gameManager.mInvaders.moveAndAnimate(dt.asSeconds());	
+		gameManager.InvaderTryShoot(dt.asSeconds());
+		gameManager.moveMissiles();
+
+		// ---- physics updates
+		gameManager.mInvaders.checkForCollisions();
+		gameManager.missileCollisionCheck();
+
+		// ---- final updates
+		gameManager.mInvaders.setNextInvaderToUpdate();
 	
 		// ---- UPDATE HUD --------------------------------------------------------- //
 		gameManager.mGameHUD.update();
 
 		// ---- RENDER OBJECTS ----------------------------------------------------- //
 		gameManager.mInvaders.render(window);
+		gameManager.renderMissiles(window);
 
 		// ---- RENDER HUD --------------------------------------------------------- //
 		gameManager.mGameHUD.render(window);

@@ -81,13 +81,6 @@ void Invader::animate()
 
 // -----------------------------------------------------------------------------
 
-void Invader::move(float x, float y)
-{
-	mSprite.move(Vector2f(x, y));
-}
-
-// -----------------------------------------------------------------------------
-
 Invaders::Invaders()
 	: mInvaders(InvadersPrivate::ROWS, std::vector<Invader>(InvadersPrivate::COLUMNS))
 	, mInvaderToUpdateRow(0)
@@ -153,11 +146,8 @@ void Invaders::init()
 
 // -----------------------------------------------------------------------------
 
-void Invaders::update(const float& pDeltaTime)
+void Invaders::moveAndAnimate(const float& pDeltaTime)
 {
-	using namespace GameGlobals;
-	using namespace InvadersPrivate;
-
 	// invaders move in time from the bottom left-hand invader up to the top 
 	// right-hand invader
 
@@ -168,17 +158,52 @@ void Invaders::update(const float& pDeltaTime)
 	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
 
 	// move it over
-	invader.move((float)mInvaderSpeed, 0);
+	invader.mSprite.move((float)mInvaderSpeed, 0);
 
 	invader.animate();
+}
+
+// -----------------------------------------------------------------------------
+
+bool Invaders::canShoot()
+{
+	if (mInvaderToUpdateRow == 0)
+	{
+		return true;
+	}
+
+	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
+
+	bool invaderCanShoot = true;
+
+	// an invader can only shoot if there is nothing below it
+	for (int row = mInvaderToUpdateRow; row >= 0; --row)
+	{
+		// as this is recursive, if it becomes false, &= won't change it back to true again
+		invaderCanShoot &= mInvaders[row][mInvaderToUpdateColumn].mDestroyed;
+	}
+
+	return invaderCanShoot;
+}
+
+// -----------------------------------------------------------------------------
+
+void Invaders::checkForCollisions()
+{
+	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
 
 	// check to see if an invader has hit an edge
 	const float x = invader.mSprite.getPosition().x;
-	if (x <= LEFT_EDGE || x >= RIGHT_EDGE - 48)
+	if (x <= GameGlobals::LEFT_EDGE || x >= GameGlobals::RIGHT_EDGE - InvadersPrivate::INVADER_SIZE)
 	{
 		mEdgeHitFlag = true;
 	}
+}
 
+// -----------------------------------------------------------------------------
+
+void Invaders::setNextInvaderToUpdate()
+{
 	// move to the next invader
 	++mInvaderToUpdateColumn;
 	if (mInvaderToUpdateColumn == 11)
@@ -224,7 +249,7 @@ void Invaders::dropInvaders()
 	{
 		for (auto& i : row)
 		{
-			i.move(0, 24);
+			i.mSprite.move(0, 24);
 		}
 	}
 
