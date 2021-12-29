@@ -113,6 +113,7 @@ void Invaders::init()
 		{
 			mInvaders[r][c].mSprite.setTextureRect(octopus2);
 			mInvaders[r][c].mSprite.setPosition(Vector2f(x, y));
+			mInvaders[r][c].init();
 			x += INVADER_SIZE;
 		}
 
@@ -128,6 +129,7 @@ void Invaders::init()
 			mInvaders[r][c].mType = InvaderType::eCRAB;
 			mInvaders[r][c].mSprite.setTextureRect(crab2);
 			mInvaders[r][c].mSprite.setPosition(Vector2f(x, y));
+			mInvaders[r][c].init();
 			x += INVADER_SIZE;
 		}
 
@@ -141,6 +143,7 @@ void Invaders::init()
 		mInvaders[4][c].mType = InvaderType::eSQUID;
 		mInvaders[4][c].mSprite.setTextureRect(squid2);
 		mInvaders[4][c].mSprite.setPosition(Vector2f(x, y));
+		mInvaders[4][c].init();
 		x += INVADER_SIZE;
 	}
 }

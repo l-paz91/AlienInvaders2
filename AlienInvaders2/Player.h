@@ -24,6 +24,7 @@ struct PlayerCannon
 {
 	PlayerCannon();
 
+	void init();
 	void moveFromInput(const float& pDeltaTime);
 	void render(sf::RenderWindow& pWindow);
 
@@ -31,7 +32,7 @@ struct PlayerCannon
 
 	void shoot();
 	void updateCannonShot(const float& pDeltaTime);
-	void updatePlayerDestroyedAnim(const float& pDeltaTime);
+	bool updatePlayerDestroyedAnim(const float& pDeltaTime);
 
 	sf::Sprite mSprite;
 	PlayerCannonShot mPlayerCannonShot;

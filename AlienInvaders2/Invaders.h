@@ -23,6 +23,7 @@ struct Invader
 {
 	Invader();
 
+	void init() { mDestroyed = false; mFlipAnimation = true; }
 	void animate();
 
 	sf::Sprite mSprite;

@@ -64,6 +64,18 @@ PlayerCannon::PlayerCannon()
 
 // -----------------------------------------------------------------------------
 
+void PlayerCannon::init()
+{
+	mLives = 3;
+	mHoldForFrames = 0;
+	mTimeElapsedForDestroyedSprite = 0.0f;
+	mPlayerDestroyed = false;
+	mSprite.setTextureRect(PlayerPrivate::cannonSprite);
+	mSprite.setPosition(GameGlobals::HALFW, PlayerPrivate::PLAYER_Y);
+}
+
+// -----------------------------------------------------------------------------
+
 void PlayerCannon::moveFromInput(const float& pDeltaTime)
 {
 	using namespace sf;
@@ -136,7 +148,7 @@ void PlayerCannon::updateCannonShot(const float& pDeltaTime)
 
 // -----------------------------------------------------------------------------
 
-void PlayerCannon::updatePlayerDestroyedAnim(const float& pDeltaTime)
+bool PlayerCannon::updatePlayerDestroyedAnim(const float& pDeltaTime)
 {
 	mTimeElapsedForDestroyedSprite += pDeltaTime;
 	++mHoldForFrames;
@@ -157,7 +169,10 @@ void PlayerCannon::updatePlayerDestroyedAnim(const float& pDeltaTime)
 		mTimeElapsedForDestroyedSprite = 0.0f;
 		mSprite.setTextureRect(PlayerPrivate::cannonSprite);
 		mPlayerDestroyed = false;
+		return true; // finished displaying animation
 	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

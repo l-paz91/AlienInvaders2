@@ -13,8 +13,24 @@ GameManager::GameManager()
 	, mInvadersDestroyed(0)
 	, mInvaderMaxShots(3)
 	, mInvaderMissileElapsedTime(0.0f)
+	, mPauseElapsedTime(0.0f)
+	, mGameState(GameState::ePLAYING)
 {
 
+}
+
+// -----------------------------------------------------------------------------
+
+void GameManager::init()
+{
+	mGameHUD.init();
+	mInvaders.init();
+	mPlayerCannon.init();
+	mInvadersMissiles.clear();
+	mInvadersDestroyed = 0;
+	mInvaderMissileElapsedTime = 0.0f;
+	mPauseElapsedTime = 0.0f;
+	mGameState = GameState::ePLAYING;
 }
 
 // -----------------------------------------------------------------------------
@@ -22,37 +38,75 @@ GameManager::GameManager()
 void GameManager::update(const float& pDeltaTime)
 {
 	// ---- UPDATE OBJECTS ----------------------------------------------------- //
-
-	// the game "freezes" whilst the players destroyed animation is playing
-	if (!mPlayerCannon.mPlayerDestroyed)
+	switch (mGameState)
 	{
-		mPlayerCannon.moveFromInput(pDeltaTime);
-		mPlayerCannon.updateCannonShot(pDeltaTime);
-		hasPlayerCannonShotCollided();
+	case GameState::eTITLE:
+	{
+		// just reset and then go to playing for now
+		init();
+		break;
+	}
 
-		// invaders don't move whilst they are being destroyed & the player can't shoot
-		// until it's finished
-		if (mInvaders.mDestroyedSprites.empty())
+	case GameState::eINSTRUCTIONS:
+		break;
+	case GameState::ePLAYING:
+	{
+		// the game "freezes" whilst the players destroyed animation is playing
+		if (!mPlayerCannon.mPlayerDestroyed)
 		{
-			mPlayerCannon.shoot();
+			mPlayerCannon.moveFromInput(pDeltaTime);
+			mPlayerCannon.updateCannonShot(pDeltaTime);
+			hasPlayerCannonShotCollided();
 
-			mInvaders.moveAndAnimate(pDeltaTime);
-			InvaderTryShoot(pDeltaTime);
-			updateMissiles();
-			hasInvaderMissileCollided();
+			// invaders don't move whilst they are being destroyed & the player can't shoot
+			// until it's finished
+			if (mInvaders.mDestroyedSprites.empty())
+			{
+				mPlayerCannon.shoot();
 
-			mInvaders.setNextInvaderToUpdate(mInvadersDestroyed);
+				mInvaders.moveAndAnimate(pDeltaTime);
+				InvaderTryShoot(pDeltaTime);
+				updateMissiles();
+				hasInvaderMissileCollided();
+
+				mInvaders.setNextInvaderToUpdate(mInvadersDestroyed);
+			}
+			else
+			{
+				mInvaders.updateDestroyedSprites(pDeltaTime);
+			}
 		}
 		else
 		{
-			mInvaders.updateDestroyedSprites(pDeltaTime);
+			if (mPlayerCannon.updatePlayerDestroyedAnim(pDeltaTime))
+			{
+				if (mPlayerCannon.mLives == 0)
+				{
+					// game over
+					mGameState = GameState::eGAMEOVER;
+					mGameHUD.mDisplayGameover = true;
+				}
+			}
+		
 		}
+		break;
 	}
-	else
+	case GameState::eGAMEOVER:
 	{
-		mPlayerCannon.updatePlayerDestroyedAnim(pDeltaTime);
+		if (!mGameHUD.updateGameoverText())
+		{
+			mGameState = GameState::eTITLE;
+		}
+		break;
 	}
-
+	case GameState::ePAUSE:
+	{
+		
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -168,7 +222,7 @@ void GameManager::hasInvaderMissileCollided()
 		// has collided with player?
 		if (hasSpriteCollided(missile.mMissile, mPlayerCannon.mSprite))
 		{
-			mGameHUD.updatePlayerLives();
+			mGameHUD.updatePlayerLives(--mPlayerCannon.mLives);
 
 			missile.mDestroyed = true;
 			mPlayerCannon.mPlayerDestroyed = true;

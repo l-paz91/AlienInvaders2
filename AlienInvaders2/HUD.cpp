@@ -1,6 +1,7 @@
 // -----------------------------------------------------------------------------
 
 //--INCLUDES--//
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -32,7 +33,20 @@ namespace
 HUD::HUD()
 	: mView(View(FloatRect(0.0f, 0.0f, WIDTH, HEIGHT)))
 {
+	init();
+}
+
+// -----------------------------------------------------------------------------
+
+void HUD::init()
+{
 	using namespace HudPrivate;
+
+	mGameover = "GAME OVER";
+	mScoreP1 = 0;
+	mHoldForFrames = 0;
+	mIndex = 0;
+	mDisplayGameover = false;
 
 	if (!mFont.loadFromFile("Fonts/space_invaders.ttf"))
 	{
@@ -49,7 +63,23 @@ HUD::HUD()
 	mScore1.setLetterSpacing(4);
 
 	setTextUp(mScore2, Vector2f(501.0f, 75.0f), "0 0 0 0");
-	setTextUp(mHiScore, Vector2f(267.0f, 75.0f), "0 0 0 0");
+
+	// read in HI SCORE from text file
+	std::ifstream readIn{ "Scores/HiScores.txt" };
+	if (!readIn)
+	{
+		std::cout << "Error opening hi scores file in HUD::init()";
+	}
+	int s;
+	readIn >> s;
+	std::stringstream ss;
+	ss << std::setfill('0') << std::setw(4) << s;
+
+	mHiScore.setLetterSpacing(4);
+	setTextUp(mHiScore, Vector2f(267.0f, 75.0f), ss.str());
+
+	setTextUp(mGameOverText, Vector2f(120.0f, 150.0f));
+	mGameOverText.setLetterSpacing(4);
 
 	mGreenBar.setSize(Vector2f(WIDTH, 3.0f));
 	mGreenBar.setFillColor(Color(82, 252, 82));
@@ -68,15 +98,6 @@ HUD::HUD()
 	mLivesSprites.push_back(mLifeSprite1);
 	mLivesSprites.push_back(mLifeSprite2);
 	setTextUp(mLivesText, Vector2f(LEFT_EDGE, 723.0f), "3");
-
-	mScoreP1 = 0;
-}
-
-// -----------------------------------------------------------------------------
-
-void HUD::update()
-{
-	// do stuff
 }
 
 // -----------------------------------------------------------------------------
@@ -105,6 +126,11 @@ void HUD::render(sf::RenderWindow& pWindow)
 	for (sf::Sprite life : mLivesSprites)
 	{
 		pWindow.draw(life);
+	}
+	
+	if (mDisplayGameover)
+	{
+		pWindow.draw(mGameOverText);
 	}
 
 	// set it back to the previous view
@@ -135,16 +161,45 @@ void HUD::updatePlayer1Score(int pScore)
 
 // -----------------------------------------------------------------------------
 
-void HUD::updatePlayerLives()
+void HUD::updatePlayerLives(int pLives)
 {
 	if(!mLivesSprites.empty())
 	{
 		mLivesSprites.erase(mLivesSprites.end() - 1);
-		mLivesText.setString(std::to_string(mLivesSprites.size() + 1));
-		return;
 	}
 
-	mLivesText.setString("0");
+	mLivesText.setString(std::to_string(pLives));
+}
+
+// -----------------------------------------------------------------------------
+
+bool HUD::updateGameoverText()
+{
+	++mHoldForFrames;
+	if (mHoldForFrames % 3 == 0 && mIndex <= mGameover.size())
+	{
+		mGameOverText.setString(mGameover.substr(0, mIndex));
+		++mIndex;
+	}
+
+	if (mHoldForFrames > 120)
+	{
+		// write out top score to a file
+		std::string s = mHiScore.getString();
+		if (mScoreP1 > std::stoi(s))
+		{
+			std::ofstream readOut{ "Scores/HiScores.txt" };
+			if (!readOut)
+			{
+				std::cout << "Error opening hi scores file in HUD::updateGameoverText()";
+			}
+			readOut << mScoreP1;
+		}
+
+		mDisplayGameover = false;
+	}
+
+	return mDisplayGameover;
 }
 
 // -----------------------------------------------------------------------------

@@ -48,18 +48,17 @@ int main()
 		// ---- CLEAR SCREEN ------------------------------------------------------- //
 		window.clear();
 
-		// ---- UPDATE OBJECTS ----------------------------------------------------- //
+		// ---- UPDATE OBJECTS --------------------------------------------- //
 		gameManager.update(dt.asSeconds());
 	
-		// ---- UPDATE HUD --------------------------------------------------------- //
-		gameManager.mGameHUD.update();
-
-		// ---- RENDER OBJECTS ----------------------------------------------------- //
+		// ---- UPDATE HUD ------------------------------------------------- //
+			
+		// ---- RENDER OBJECTS --------------------------------------------- //
 		gameManager.mPlayerCannon.render(window);
 		gameManager.mInvaders.render(window);
 		gameManager.renderMissiles(window);
 
-		// ---- RENDER HUD --------------------------------------------------------- //
+		// ---- RENDER HUD ------------------------------------------------- //
 		gameManager.mGameHUD.render(window);
 
 		// ---- DISPLAY WINDOW ----------------------------------------------------- //

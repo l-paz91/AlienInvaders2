@@ -13,12 +13,14 @@ struct HUD
 {
 	HUD();
 
-	void update();
+	void init();
 	void render(sf::RenderWindow& pWindow);
 	void setTextUp(sf::Text& pText, const sf::Vector2f& pPos, const std::string& pMsg = "");
 
 	void updatePlayer1Score(int pScore);
-	void updatePlayerLives();
+	void updatePlayerLives(int pLives);
+
+	bool updateGameoverText();
 
 	sf::View mView;
 	sf::Font mFont;
@@ -28,6 +30,7 @@ struct HUD
 	sf::Text mHiScoreText;
 	sf::Text mLivesText;
 	sf::Text mCreditText;
+	sf::Text mGameOverText;
 
 	sf::Text mScore1;
 	sf::Text mScore2;
@@ -36,7 +39,11 @@ struct HUD
 	sf::RectangleShape mGreenBar;
 	std::vector<sf::Sprite> mLivesSprites;
 
+	std::string mGameover;
 	int mScoreP1;
+	int mHoldForFrames;
+	size_t mIndex;
+	bool mDisplayGameover;
 };
 
 // -----------------------------------------------------------------------------

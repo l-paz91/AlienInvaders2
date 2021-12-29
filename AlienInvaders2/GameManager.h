@@ -11,10 +11,22 @@
 
 // -----------------------------------------------------------------------------
 
+enum class GameState
+{
+	eTITLE,
+	eINSTRUCTIONS,
+	ePLAYING,
+	eGAMEOVER,
+	ePAUSE
+};
+
+// -----------------------------------------------------------------------------
+
 struct GameManager
 {
 	GameManager();
 
+	void init();
 	void update(const float& pDeltaTime);
 
 	void InvaderTryShoot(const float& pDeltaTime);
@@ -41,6 +53,8 @@ private:
 
 	int mInvaderMaxShots;
 	float mInvaderMissileElapsedTime;
+	float mPauseElapsedTime;
+	GameState mGameState;
 };
 
 // -----------------------------------------------------------------------------
