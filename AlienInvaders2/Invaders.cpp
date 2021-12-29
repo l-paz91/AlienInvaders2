@@ -22,6 +22,7 @@ namespace
 		constexpr int INVADER_YSTART = 384;
 		constexpr int INVADER_MAX_SHOTS = 3;
 		constexpr int INVADER_SIZE = 48;
+		constexpr float MAX_DESTROY_DISPLAY = 0.2f;
 
 		// offsets for textures in sprite sheet
 		const sf::IntRect octopus1 = sf::IntRect(0, 0, 36, 24);
@@ -33,7 +34,7 @@ namespace
 		const sf::IntRect squid1 = sf::IntRect(0, 48, 24, 24);
 		const sf::IntRect squid2 = sf::IntRect(36, 48, 24, 24);
 
-		const sf::IntRect destroyed = sf::IntRect(0, 72, 32, 24);
+		const sf::IntRect destroyed = sf::IntRect(0, 72, 39, 24);
 	}
 }
 
@@ -172,6 +173,23 @@ void Invaders::moveAndAnimate(const float& pDeltaTime)
 
 // -----------------------------------------------------------------------------
 
+void Invaders::updateDestroyedSprites(const float& pDeltaTime)
+{
+	// update any destroyed sprites
+	// we go backwards to prevent out of range errors
+	for (int i = mDestroyedSprites.size() - 1; i >= 0; --i)
+	{
+		mDestroyedSprites[i].mElapsedTime += pDeltaTime;
+		if (mDestroyedSprites[i].mElapsedTime > InvadersPrivate::MAX_DESTROY_DISPLAY)
+		{
+			// remove from vector
+			mDestroyedSprites.erase(mDestroyedSprites.begin() + i);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+
 bool Invaders::canShoot()
 {
 	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
@@ -240,6 +258,29 @@ void Invaders::render(sf::RenderWindow& pWindow)
 			}
 		}
 	}
+
+	// render invader destroyed sprites
+	for (const DestroyedEvent& d : mDestroyedSprites)
+	{
+		pWindow.draw(d.mSprite);
+	}
+}
+
+// -----------------------------------------------------------------------------
+
+void Invaders::invaderDestroyedEvent(const Invader& pInvader)
+{
+	DestroyedEvent destroyed;
+	destroyed.mSprite = sf::Sprite(TextureManager::getTexture(InvadersPrivate::textureFilename));
+
+	destroyed.mSprite.setTextureRect(InvadersPrivate::destroyed);
+	destroyed.mSprite.setPosition(pInvader.mSprite.getPosition());
+
+	// push back a new destroyed sprite
+	mDestroyedSprites.push_back(destroyed);
+
+	// play destroyed sound
+	//SoundManager::playSound(SoundEvent::eALIEN_HIT);
 }
 
 // -----------------------------------------------------------------------------

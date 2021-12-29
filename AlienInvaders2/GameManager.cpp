@@ -27,16 +27,26 @@ void GameManager::update(const float& pDeltaTime)
 	if (!mPlayerCannon.mPlayerDestroyed)
 	{
 		mPlayerCannon.moveFromInput(pDeltaTime);
-		mPlayerCannon.shoot();
 		mPlayerCannon.updateCannonShot(pDeltaTime);
 		hasPlayerCannonShotCollided();
 
-		mInvaders.moveAndAnimate(pDeltaTime);
-		InvaderTryShoot(pDeltaTime);
-		updateMissiles();
-		hasInvaderMissileCollided();
+		// invaders don't move whilst they are being destroyed & the player can't shoot
+		// until it's finished
+		if (mInvaders.mDestroyedSprites.empty())
+		{
+			mPlayerCannon.shoot();
 
-		mInvaders.setNextInvaderToUpdate(mInvadersDestroyed);
+			mInvaders.moveAndAnimate(pDeltaTime);
+			InvaderTryShoot(pDeltaTime);
+			updateMissiles();
+			hasInvaderMissileCollided();
+
+			mInvaders.setNextInvaderToUpdate(mInvadersDestroyed);
+		}
+		else
+		{
+			mInvaders.updateDestroyedSprites(pDeltaTime);
+		}
 	}
 	else
 	{
@@ -121,6 +131,9 @@ void GameManager::hasPlayerCannonShotCollided()
 			{
 				++mInvadersDestroyed;
 				invader.mDestroyed = true;
+				mInvaders.invaderDestroyedEvent(invader);
+
+				// move player shot out of the way of other invaders
 				playerShot.mRect.setPosition(0, 0);
 				playerShot.mShotFired = false;
 
