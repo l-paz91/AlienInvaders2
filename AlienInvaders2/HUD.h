@@ -4,6 +4,7 @@
 // -----------------------------------------------------------------------------
 
 //--INCLUDES--//
+#include <vector>
 #include <SFML/Graphics.hpp>
 
 // -----------------------------------------------------------------------------
@@ -17,6 +18,7 @@ struct HUD
 	void setTextUp(sf::Text& pText, const sf::Vector2f& pPos, const std::string& pMsg = "");
 
 	void updatePlayer1Score(int pScore);
+	void updatePlayerLives();
 
 	sf::View mView;
 	sf::Font mFont;
@@ -32,8 +34,7 @@ struct HUD
 	sf::Text mHiScore;
 
 	sf::RectangleShape mGreenBar;
-	sf::Sprite mLifeSprite1;
-	sf::Sprite mLifeSprite2;
+	std::vector<sf::Sprite> mLivesSprites;
 
 	int mScoreP1;
 };

@@ -42,7 +42,7 @@ HUD::HUD()
 	setTextUp(mScoreP1text, Vector2f(LEFT_EDGE, TOP), "S C O R E< 1 >");
 	setTextUp(mScoreP2text, Vector2f(459.0f, TOP), "S C O R E< 2 >");
 	setTextUp(mHiScoreText, Vector2f(243.0f, TOP), "H I-S C O R E");
-	setTextUp(mLivesText, Vector2f(LEFT_EDGE, 723.0f), "3");
+
 	setTextUp(mCreditText, Vector2f(411.0f, 723.0f), "C R E D I T   0 0");
 
 	setTextUp(mScore1, Vector2f(75.0f, 75.0f), "0000");
@@ -55,11 +55,19 @@ HUD::HUD()
 	mGreenBar.setFillColor(Color(82, 252, 82));
 	mGreenBar.setPosition(Vector2f(0.0f, 717.0f));
 
-	mLifeSprite1 = Sprite(TextureManager::getTexture("Graphics/player.png"));
+	const sf::IntRect cannonSprite = sf::IntRect(0, 0, 39, 24);
+
+	sf::Sprite mLifeSprite1 = Sprite(TextureManager::getTexture("Graphics/playerSpritesheet.png"));
+	mLifeSprite1.setTextureRect(cannonSprite);
 	mLifeSprite1.setPosition(Vector2f(81.f, 720.0f));
 
-	mLifeSprite2 = Sprite(TextureManager::getTexture("Graphics/player.png"));
+	sf::Sprite mLifeSprite2 = Sprite(TextureManager::getTexture("Graphics/playerSpritesheet.png"));
+	mLifeSprite2.setTextureRect(cannonSprite);
 	mLifeSprite2.setPosition(Vector2f(126.0f, 720.f));
+
+	mLivesSprites.push_back(mLifeSprite1);
+	mLivesSprites.push_back(mLifeSprite2);
+	setTextUp(mLivesText, Vector2f(LEFT_EDGE, 723.0f), "3");
 
 	mScoreP1 = 0;
 }
@@ -93,8 +101,11 @@ void HUD::render(sf::RenderWindow& pWindow)
 	pWindow.draw(mHiScore);
 
 	pWindow.draw(mGreenBar);
-	pWindow.draw(mLifeSprite1);
-	pWindow.draw(mLifeSprite2);
+
+	for (sf::Sprite life : mLivesSprites)
+	{
+		pWindow.draw(life);
+	}
 
 	// set it back to the previous view
 	pWindow.setView(currentView);
@@ -120,6 +131,20 @@ void HUD::updatePlayer1Score(int pScore)
 	ss << std::setfill('0') << std::setw(4) << mScoreP1;
 
 	mScore1.setString(ss.str());
+}
+
+// -----------------------------------------------------------------------------
+
+void HUD::updatePlayerLives()
+{
+	if(!mLivesSprites.empty())
+	{
+		mLivesSprites.erase(mLivesSprites.end() - 1);
+		mLivesText.setString(std::to_string(mLivesSprites.size() + 1));
+		return;
+	}
+
+	mLivesText.setString("0");
 }
 
 // -----------------------------------------------------------------------------

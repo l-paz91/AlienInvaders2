@@ -168,7 +168,7 @@ void GameManager::hasInvaderMissileCollided()
 		// has collided with player?
 		if (hasSpriteCollided(missile.mMissile, mPlayerCannon.mSprite))
 		{
-			// update HUD
+			mGameHUD.updatePlayerLives();
 
 			missile.mDestroyed = true;
 			mPlayerCannon.mPlayerDestroyed = true;
