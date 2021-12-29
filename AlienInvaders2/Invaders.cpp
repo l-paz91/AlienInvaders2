@@ -176,7 +176,12 @@ bool Invaders::canShoot()
 {
 	Invader& invader = mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn];
 
-	if (mInvaderToUpdateRow == 0 && !invader.mDestroyed)
+	if (invader.mDestroyed)
+	{
+		return false;
+	}
+
+	if (mInvaderToUpdateRow == 0)
 	{
 		return true;
 	}

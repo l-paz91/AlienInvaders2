@@ -15,12 +15,15 @@ struct GameManager
 {
 	GameManager();
 
+	void update(const float& pDeltaTime);
+
 	void InvaderTryShoot(const float& pDeltaTime);
 	void updateMissiles();
 	void cleanUpMissiles();
 	void renderMissiles(sf::RenderWindow& pWindow);
 
-	void hasPlayerHitInvader();
+	void hasPlayerCannonShotCollided();
+	void hasInvaderMissileCollided();
 
 	HUD mGameHUD;
 	Invaders mInvaders;

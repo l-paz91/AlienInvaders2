@@ -18,6 +18,12 @@ namespace
 		constexpr int PLAYER_MINX = GameGlobals::LEFT_EDGE + PLAYER_OFFSET;
 		constexpr int PLAYER_MAXX = GameGlobals::RIGHT_EDGE - PLAYER_OFFSET;
 		constexpr int PLAYER_SPEED = 180;
+		constexpr float MAX_PLAYER_DESTROYED_TIME = 0.5f;
+
+		const sf::IntRect cannonSprite = sf::IntRect(0, 0, 39, 24);
+		const sf::IntRect cannonExplode1Sprite = sf::IntRect(0, 24, 45, 24);
+		const sf::IntRect cannonExplode2Sprite = sf::IntRect(0, 48, 48, 24);
+		const sf::IntRect cannonShotExplodeSprite = sf::IntRect(0, 72, 24, 24);
 	}
 }
 
@@ -44,9 +50,14 @@ void PlayerCannonShot::render(sf::RenderWindow& pWindow)
 // -----------------------------------------------------------------------------
 
 PlayerCannon::PlayerCannon()
-	: mSprite(sf::Sprite(TextureManager::getTexture("Graphics/player.png")))
+	: mSprite(sf::Sprite(TextureManager::getTexture("Graphics/playerSpritesheet.png")))
 	, mPlayerCannonShot()
+	, mLives(3)
+	, mHoldForFrames(0)
+	, mTimeElapsedForDestroyedSprite(0.0f)
+	, mPlayerDestroyed(false)
 {
+	mSprite.setTextureRect(PlayerPrivate::cannonSprite);
 	mSprite.setOrigin(PlayerPrivate::PLAYER_OFFSET, 0);
 	mSprite.setPosition(GameGlobals::HALFW, PlayerPrivate::PLAYER_Y);
 }
@@ -120,6 +131,32 @@ void PlayerCannon::updateCannonShot(const float& pDeltaTime)
 	if (mPlayerCannonShot.mShotFired)
 	{
 		mPlayerCannonShot.mRect.move(0, -(720 * pDeltaTime));
+	}
+}
+
+// -----------------------------------------------------------------------------
+
+void PlayerCannon::updatePlayerDestroyedAnim(const float& pDeltaTime)
+{
+	mTimeElapsedForDestroyedSprite += pDeltaTime;
+	++mHoldForFrames;
+
+	if (mHoldForFrames == 3)
+	{
+		mSprite.setTextureRect(PlayerPrivate::cannonExplode1Sprite);
+	}
+
+	if (mHoldForFrames == 6)
+	{
+		mSprite.setTextureRect(PlayerPrivate::cannonExplode2Sprite);
+		mHoldForFrames = 0;
+	}
+
+	if (mTimeElapsedForDestroyedSprite >= 1.0f)
+	{
+		mTimeElapsedForDestroyedSprite = 0.0f;
+		mSprite.setTextureRect(PlayerPrivate::cannonSprite);
+		mPlayerDestroyed = false;
 	}
 }
 

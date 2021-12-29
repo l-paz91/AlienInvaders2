@@ -19,6 +19,34 @@ GameManager::GameManager()
 
 // -----------------------------------------------------------------------------
 
+void GameManager::update(const float& pDeltaTime)
+{
+	// ---- UPDATE OBJECTS ----------------------------------------------------- //
+
+	// the game "freezes" whilst the players destroyed animation is playing
+	if (!mPlayerCannon.mPlayerDestroyed)
+	{
+		mPlayerCannon.moveFromInput(pDeltaTime);
+		mPlayerCannon.shoot();
+		mPlayerCannon.updateCannonShot(pDeltaTime);
+		hasPlayerCannonShotCollided();
+
+		mInvaders.moveAndAnimate(pDeltaTime);
+		InvaderTryShoot(pDeltaTime);
+		updateMissiles();
+		hasInvaderMissileCollided();
+
+		mInvaders.setNextInvaderToUpdate(mInvadersDestroyed);
+	}
+	else
+	{
+		mPlayerCannon.updatePlayerDestroyedAnim(pDeltaTime);
+	}
+
+}
+
+// -----------------------------------------------------------------------------
+
 void GameManager::InvaderTryShoot(const float& pDeltaTime)
 {
 	mInvaderMissileElapsedTime += pDeltaTime;
@@ -72,12 +100,19 @@ void GameManager::renderMissiles(sf::RenderWindow& pWindow)
 
 // -----------------------------------------------------------------------------
 
-void GameManager::hasPlayerHitInvader()
+void GameManager::hasPlayerCannonShotCollided()
 {
-	// ignore the collision if the alien has already been destroyed
-	// we don't remove sprites from the vector - just hide them
 	PlayerCannonShot& playerShot = mPlayerCannon.mPlayerCannonShot;
 
+	// has collided with barrier?
+
+	// has collided with flying saucer?
+
+	// has collided with top of screen?
+
+	// has collided with invader?
+	// ignore the collision if the alien has already been destroyed
+	// we don't remove sprites from the vector - just hide them
 	for (auto& row : mInvaders.mInvaders)
 	{
 		for (auto& invader : row)
@@ -107,8 +142,29 @@ void GameManager::hasPlayerHitInvader()
 			}
 		}
 	}
+}
 
+// -----------------------------------------------------------------------------
 
+void GameManager::hasInvaderMissileCollided()
+{
+	for (InvaderMissile& missile : mInvadersMissiles)
+	{
+		// has collided with barrier?
+
+		// has collided with player?
+		if (hasSpriteCollided(missile.mMissile, mPlayerCannon.mSprite))
+		{
+			// update HUD
+
+			missile.mDestroyed = true;
+			mPlayerCannon.mPlayerDestroyed = true;
+		}
+
+		// has collided with player cannon shot?
+
+		// has collided with bottom screen edge?
+	}
 }
 
 // -----------------------------------------------------------------------------

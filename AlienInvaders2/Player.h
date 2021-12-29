@@ -31,9 +31,15 @@ struct PlayerCannon
 
 	void shoot();
 	void updateCannonShot(const float& pDeltaTime);
+	void updatePlayerDestroyedAnim(const float& pDeltaTime);
 
 	sf::Sprite mSprite;
 	PlayerCannonShot mPlayerCannonShot;
+
+	int mLives;
+	int mHoldForFrames;
+	float mTimeElapsedForDestroyedSprite;
+	bool mPlayerDestroyed;
 };
 
 // -----------------------------------------------------------------------------
