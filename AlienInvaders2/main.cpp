@@ -54,12 +54,9 @@ int main()
 		// ---- UPDATE HUD ------------------------------------------------- //
 			
 		// ---- RENDER OBJECTS --------------------------------------------- //
-		gameManager.mPlayerCannon.render(window);
-		gameManager.mInvaders.render(window);
-		gameManager.renderMissiles(window);
+		gameManager.render(window);
 
 		// ---- RENDER HUD ------------------------------------------------- //
-		gameManager.mGameHUD.render(window);
 
 		// ---- DISPLAY WINDOW ----------------------------------------------------- //
 		window.display();

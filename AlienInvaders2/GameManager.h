@@ -28,6 +28,7 @@ struct GameManager
 
 	void init();
 	void update(const float& pDeltaTime);
+	void render(sf::RenderWindow& pWindow);
 
 	void InvaderTryShoot(const float& pDeltaTime);
 	void updateMissiles();

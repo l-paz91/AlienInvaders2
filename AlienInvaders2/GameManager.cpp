@@ -14,9 +14,9 @@ GameManager::GameManager()
 	, mInvaderMaxShots(3)
 	, mInvaderMissileElapsedTime(0.0f)
 	, mPauseElapsedTime(0.0f)
-	, mGameState(GameState::ePLAYING)
+	, mGameState(GameState::eTITLE)
 {
-
+	init();
 }
 
 // -----------------------------------------------------------------------------
@@ -30,23 +30,30 @@ void GameManager::init()
 	mInvadersDestroyed = 0;
 	mInvaderMissileElapsedTime = 0.0f;
 	mPauseElapsedTime = 0.0f;
-	mGameState = GameState::ePLAYING;
+	//mGameState = GameState::eTITLE;
 }
 
 // -----------------------------------------------------------------------------
 
 void GameManager::update(const float& pDeltaTime)
 {
+	using namespace sf;
 	// ---- UPDATE OBJECTS ----------------------------------------------------- //
 	switch (mGameState)
 	{
 	case GameState::eTITLE:
 	{
-		// just reset and then go to playing for now
-		init();
+		mGameHUD.updateTitleScreenMessages(pDeltaTime);
+
+		// has 1 been pressed? If so, start the game
+		const bool num1Key = Keyboard::isKeyPressed(Keyboard::Num1);
+		if (num1Key)
+		{
+			init();
+			mGameState = GameState::ePLAYING;
+		}
 		break;
 	}
-
 	case GameState::eINSTRUCTIONS:
 		break;
 	case GameState::ePLAYING:
@@ -86,8 +93,7 @@ void GameManager::update(const float& pDeltaTime)
 					mGameState = GameState::eGAMEOVER;
 					mGameHUD.mDisplayGameover = true;
 				}
-			}
-		
+			}	
 		}
 		break;
 	}
@@ -102,6 +108,49 @@ void GameManager::update(const float& pDeltaTime)
 	case GameState::ePAUSE:
 	{
 		
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+// -----------------------------------------------------------------------------
+
+void GameManager::render(sf::RenderWindow& pWindow)
+{
+	switch (mGameState)
+	{
+	case GameState::eTITLE: 
+	{
+		mGameHUD.renderTitleScreen(pWindow);
+		break;
+	}
+	case GameState::eINSTRUCTIONS: 
+	{
+
+
+		break;
+	}
+	case GameState::ePLAYING: 
+	{
+		// ---- RENDER OBJECTS --------------------------------------------- //
+		mPlayerCannon.render(pWindow);
+		mInvaders.render(pWindow);
+		renderMissiles(pWindow);
+
+		// ---- RENDER HUD ------------------------------------------------- //
+		mGameHUD.render(pWindow);
+		break;
+	}
+	case GameState::eGAMEOVER: 
+	{
+
+		break;
+	}
+	case GameState::ePAUSE: 
+	{
+
 		break;
 	}
 	default:

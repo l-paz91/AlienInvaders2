@@ -25,15 +25,72 @@ namespace
 	{
 		constexpr float TOP = 27.0f;
 		constexpr float BOTTOM = HEIGHT - 24.0f;
+
+		void setTextUp(sf::Text& pText, const sf::Vector2f& pPos, const sf::Font& pFont, const std::string& pMsg = "")
+		{
+			pText.setPosition(pPos);
+			pText.setFont(pFont);
+			pText.setCharacterSize(21);
+			pText.setFillColor(Color::White);
+			pText.setString(pMsg);
+		}
 	}
+}
+
+// -----------------------------------------------------------------------------
+
+ScoreAdvanceTable::ScoreAdvanceTable()
+	: mScoreAdvanceTableText()
+	, mFlyingSaucer(Sprite(TextureManager::getTexture("Graphics/Shield&SaucerSpriteSheet.png")))
+	, mSquid(Sprite(TextureManager::getTexture("Graphics/invaderSpritesheet.png")))
+	, mCrab(Sprite(TextureManager::getTexture("Graphics/invaderSpritesheet.png")))
+	, mOctopus(Sprite(TextureManager::getTexture("Graphics/invaderSpritesheet.png")))
+{
+	mFlyingSaucer.setTextureRect(sf::IntRect(0, 48, 48, 20));
+	mFlyingSaucer.setPosition(Vector2f(190, 420));
+
+	mSquid.setTextureRect(sf::IntRect(0, 48, 24, 24));
+	mSquid.setPosition(Vector2f(200, 470));
+
+	mCrab.setTextureRect(sf::IntRect(0, 24, 32, 24));
+	mCrab.setPosition(Vector2f(195, 530));
+
+	mOctopus.setTextureRect(sf::IntRect(36, 0, 36, 24));
+	mOctopus.setPosition(Vector2f(193, 585));
+}
+
+// -----------------------------------------------------------------------------
+
+void ScoreAdvanceTable::render(sf::RenderWindow& pWindow)
+{
+	pWindow.draw(mScoreAdvanceTableText);
+	pWindow.draw(mFlyingSaucer);
+	pWindow.draw(mSquid);
+	pWindow.draw(mCrab);
+	pWindow.draw(mOctopus);
 }
 
 // -----------------------------------------------------------------------------
 
 HUD::HUD()
 	: mView(View(FloatRect(0.0f, 0.0f, WIDTH, HEIGHT)))
+	, mInsertCoin("    INSERT     COIN\n\n\n\n<1   OR   2 PLAYERS>\n\n\n*1   1 PLAYER    1  COIN\n\n\n*2  2 PLAYERS  2  COINS", 5)
+	, mPlaySpaceInvaders("         PLAY\n\n\nSPACE INVADERS", 5)
+	, mScores(" = ?  MYSTERY\n\n = 30  POINTS\n\n = 20  POINTS\n\n = 10  POINTS", 5)
 {
 	init();
+
+	HudPrivate::setTextUp(mScoreAdvanceTable.mScoreAdvanceTableText, Vector2f(110, 370), mFont, "*SCORE  ADVANCE  TABLE*");
+	mScoreAdvanceTable.mScoreAdvanceTableText.setLetterSpacing(4);
+
+	HudPrivate::setTextUp(mInsertCoin.mDisplayText, Vector2f(160, 300), mFont);
+	mInsertCoin.mDisplayText.setLetterSpacing(4);
+
+	HudPrivate::setTextUp(mPlaySpaceInvaders.mDisplayText, Vector2f(190, 200), mFont);
+	mPlaySpaceInvaders.mDisplayText.setLetterSpacing(4);
+
+	HudPrivate::setTextUp(mScores.mDisplayText, Vector2f(250, 415), mFont);
+	mScores.mDisplayText.setLetterSpacing(4);
 }
 
 // -----------------------------------------------------------------------------
@@ -53,16 +110,16 @@ void HUD::init()
 		std::cout << "Error loading HUD font." << std::endl;
 	}
 
-	setTextUp(mScoreP1text, Vector2f(LEFT_EDGE, TOP), "S C O R E< 1 >");
-	setTextUp(mScoreP2text, Vector2f(459.0f, TOP), "S C O R E< 2 >");
-	setTextUp(mHiScoreText, Vector2f(243.0f, TOP), "H I-S C O R E");
+	setTextUp(mScoreP1text, Vector2f(LEFT_EDGE, TOP), mFont, "S C O R E< 1 >");
+	setTextUp(mScoreP2text, Vector2f(459.0f, TOP), mFont, "S C O R E< 2 >");
+	setTextUp(mHiScoreText, Vector2f(243.0f, TOP), mFont, "H I-S C O R E");
 
-	setTextUp(mCreditText, Vector2f(411.0f, 723.0f), "C R E D I T   0 0");
+	setTextUp(mCreditText, Vector2f(411.0f, 723.0f), mFont, "C R E D I T   0 0");
 
-	setTextUp(mScore1, Vector2f(75.0f, 75.0f), "0000");
+	setTextUp(mScore1, Vector2f(75.0f, 75.0f), mFont, "0000");
 	mScore1.setLetterSpacing(4);
 
-	setTextUp(mScore2, Vector2f(501.0f, 75.0f), "0 0 0 0");
+	setTextUp(mScore2, Vector2f(501.0f, 75.0f), mFont, "0 0 0 0");
 
 	// read in HI SCORE from text file
 	std::ifstream readIn{ "Scores/HiScores.txt" };
@@ -76,9 +133,9 @@ void HUD::init()
 	ss << std::setfill('0') << std::setw(4) << s;
 
 	mHiScore.setLetterSpacing(4);
-	setTextUp(mHiScore, Vector2f(267.0f, 75.0f), ss.str());
+	setTextUp(mHiScore, Vector2f(267.0f, 75.0f), mFont, ss.str());
 
-	setTextUp(mGameOverText, Vector2f(120.0f, 150.0f));
+	setTextUp(mGameOverText, Vector2f(120.0f, 150.0f), mFont);
 	mGameOverText.setLetterSpacing(4);
 
 	mGreenBar.setSize(Vector2f(WIDTH, 3.0f));
@@ -97,7 +154,13 @@ void HUD::init()
 
 	mLivesSprites.push_back(mLifeSprite1);
 	mLivesSprites.push_back(mLifeSprite2);
-	setTextUp(mLivesText, Vector2f(LEFT_EDGE, 723.0f), "3");
+	setTextUp(mLivesText, Vector2f(LEFT_EDGE, 723.0f), mFont, "3");
+
+	setTextUp(mDisplayText, Vector2f(-10, 10), mFont);
+	mDisplayText.setLetterSpacing(4);
+
+	mFlipTitleScreenMessages = false;
+	mStartScoreTable = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -139,13 +202,72 @@ void HUD::render(sf::RenderWindow& pWindow)
 
 // -----------------------------------------------------------------------------
 
-void HUD::setTextUp(Text& pText, const Vector2f& pPos, const std::string& pMsg /*=""*/)
+void HUD::renderTitleScreen(sf::RenderWindow& pWindow)
 {
-	pText.setPosition(pPos);
-	pText.setFont(mFont);
-	pText.setCharacterSize(21);
-	pText.setFillColor(Color::White);
-	pText.setString(pMsg);
+	// get the current view so we can set it back after
+	View currentView = pWindow.getView();
+
+	// set the view to the HUD
+	pWindow.setView(mView);
+
+	// now draw to the window
+	pWindow.draw(mScoreP1text);
+	pWindow.draw(mScore1);
+	pWindow.draw(mScoreP2text);
+	pWindow.draw(mHiScoreText);
+	pWindow.draw(mHiScore);
+	//pWindow.draw(mLivesText);
+	pWindow.draw(mCreditText);
+
+	if (!mFlipTitleScreenMessages)
+	{
+		if (mStartScoreTable)
+		{
+			mScoreAdvanceTable.render(pWindow);
+			pWindow.draw(mScores.mDisplayText);
+		}
+
+		pWindow.draw(mPlaySpaceInvaders.mDisplayText);
+	}
+	else
+	{
+		pWindow.draw(mInsertCoin.mDisplayText);
+	}
+
+	// set it back to the previous view
+	pWindow.setView(currentView);
+}
+
+// -----------------------------------------------------------------------------
+
+void HUD::updateTitleScreenMessages(const float& pDeltaTime)
+{
+	if (!mFlipTitleScreenMessages)
+	{
+		if (mPlaySpaceInvaders.update())
+		{
+			mStartScoreTable = true;
+		}
+
+		if (mStartScoreTable)
+		{
+			if (mScores.update())
+			{
+				mStartScoreTable = false;
+				mFlipTitleScreenMessages = !mFlipTitleScreenMessages;
+				mPlaySpaceInvaders.reset();
+				mScores.reset();
+			}
+		}
+	}
+	else
+	{
+		if (mInsertCoin.update())
+		{
+			mFlipTitleScreenMessages = !mFlipTitleScreenMessages;
+			mInsertCoin.reset();
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
