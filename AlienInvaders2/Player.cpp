@@ -54,6 +54,7 @@ PlayerCannon::PlayerCannon()
 	, mPlayerCannonShot()
 	, mLives(3)
 	, mHoldForFrames(0)
+	, mCooldown(0)
 	, mTimeElapsedForDestroyedSprite(0.0f)
 	, mPlayerDestroyed(false)
 {
@@ -68,6 +69,7 @@ void PlayerCannon::init()
 {
 	mLives = 3;
 	mHoldForFrames = 0;
+	mCooldown = 0;
 	mTimeElapsedForDestroyedSprite = 0.0f;
 	mPlayerDestroyed = false;
 	mSprite.setTextureRect(PlayerPrivate::cannonSprite);
@@ -110,7 +112,11 @@ void PlayerCannon::moveFromInput(const float& pDeltaTime)
 void PlayerCannon::render(sf::RenderWindow& pWindow)
 {
 	pWindow.draw(mSprite);
-	mPlayerCannonShot.render(pWindow);
+
+	if (mCooldown == 0)
+	{
+		mPlayerCannonShot.render(pWindow);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -120,19 +126,22 @@ void PlayerCannon::shoot()
 	using namespace sf;
 	using namespace PlayerPrivate;
 
-	const bool s = Keyboard::isKeyPressed(Keyboard::S);
-	if (s && !mPlayerCannonShot.mShotFired)
+	if (mCooldown == 0)
 	{
-		// ensure shot always spawns direct top-centre of the player
-		mPlayerCannonShot.mRect.setPosition(mSprite.getPosition().x - 2, PLAYER_Y - 12);
-		mPlayerCannonShot.mShotFired = true;
-	}
+		const bool s = Keyboard::isKeyPressed(Keyboard::S);
+		if (s && !mPlayerCannonShot.mShotFired)
+		{
+			// ensure shot always spawns direct top-centre of the player
+			mPlayerCannonShot.mRect.setPosition(mSprite.getPosition().x - 2, PLAYER_Y - 12);
+			mPlayerCannonShot.mShotFired = true;
+		}
 
-	// top hit?
-	if (mPlayerCannonShot.mRect.getPosition().y <= GameGlobals::TOP_BANNER)
-	{
-		mPlayerCannonShot.mRect.setPosition(0, 0);	// move it out of the way of invaders
-		mPlayerCannonShot.mShotFired = false;
+		// top hit?
+		if (mPlayerCannonShot.mRect.getPosition().y <= GameGlobals::TOP_BANNER)
+		{
+			mPlayerCannonShot.mRect.setPosition(0, 0);	// move it out of the way of invaders
+			mPlayerCannonShot.mShotFired = false;
+		}
 	}
 }
 
@@ -143,6 +152,15 @@ void PlayerCannon::updateCannonShot(const float& pDeltaTime)
 	if (mPlayerCannonShot.mShotFired)
 	{
 		mPlayerCannonShot.mRect.move(0, -(720 * pDeltaTime));
+	}
+
+	if (mCooldown > 0)
+	{
+		--mCooldown;
+		if (mCooldown == 0)
+		{
+			mPlayerCannonShot.mShotFired = false;
+		}
 	}
 }
 
@@ -173,6 +191,14 @@ bool PlayerCannon::updatePlayerDestroyedAnim(const float& pDeltaTime)
 	}
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+
+// prevent player from shooting for a second to prevent spam on shields
+void PlayerCannon::setCooldown()
+{
+	mCooldown = 15;
 }
 
 // -----------------------------------------------------------------------------

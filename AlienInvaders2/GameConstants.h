@@ -32,6 +32,12 @@ namespace GameGlobals
 	constexpr int BOT_BANNER = 51;
 	constexpr int LEFT_EDGE = 27;
 	constexpr int RIGHT_EDGE = WIDTH - LEFT_EDGE;
+
+	inline int randint(int min, int max)
+	{
+		static std::default_random_engine ran((unsigned int)time(0));
+		return std::uniform_int_distribution<>{min, max}(ran);
+	}
 }
 
 // -----------------------------------------------------------------------------

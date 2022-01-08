@@ -8,6 +8,7 @@
 #include "InvaderMissiles.h"
 #include "Invaders.h"
 #include "Player.h"
+#include "Shield.h"
 
 // -----------------------------------------------------------------------------
 
@@ -37,11 +38,15 @@ struct GameManager
 
 	void hasPlayerCannonShotCollided();
 	void hasInvaderMissileCollided();
+	void hasInvaderCollidedWithShield();
+
+	bool perPixelCollision(bool pIsInvaderMissile, sf::RectangleShape& pRectShape, sf::Sprite& pSprite, const sf::Image& pSpriteImage);
 
 	HUD mGameHUD;
 	Invaders mInvaders;
 	PlayerCannon mPlayerCannon;
 	std::vector<InvaderMissile> mInvadersMissiles;
+	Shields mShields;
 
 	int mInvadersDestroyed;
 

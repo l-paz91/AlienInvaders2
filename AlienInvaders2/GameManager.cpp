@@ -1,6 +1,8 @@
 // -----------------------------------------------------------------------------
 
 //--INCLUDES--//
+#include "GameConstants.h"
+
 #include "GameManager.h"
 
 // -----------------------------------------------------------------------------
@@ -10,6 +12,7 @@ GameManager::GameManager()
 	, mInvaders()
 	, mPlayerCannon()
 	, mInvadersMissiles()
+	, mShields()
 	, mInvadersDestroyed(0)
 	, mInvaderMaxShots(3)
 	, mInvaderMissileElapsedTime(0.0f)
@@ -30,7 +33,7 @@ void GameManager::init()
 	mInvadersDestroyed = 0;
 	mInvaderMissileElapsedTime = 0.0f;
 	mPauseElapsedTime = 0.0f;
-	//mGameState = GameState::eTITLE;
+	mGameState = GameState::ePLAYING;
 }
 
 // -----------------------------------------------------------------------------
@@ -75,6 +78,19 @@ void GameManager::update(const float& pDeltaTime)
 				InvaderTryShoot(pDeltaTime);
 				updateMissiles();
 				hasInvaderMissileCollided();
+				hasInvaderCollidedWithShield();
+
+				// it's about to hit player
+				Invader& invader = mInvaders.getCurrentInvader();
+				if (!invader.mDestroyed && invader.mSprite.getPosition().y > 621)
+				{
+					if (hasSpriteCollided(invader.mSprite, mPlayerCannon.mSprite))
+					{
+						mPlayerCannon.mPlayerDestroyed;
+						mPlayerCannon.mLives = 0;
+						mGameHUD.updatePlayerLives(0);
+					}
+				}
 
 				mInvaders.setNextInvaderToUpdate(mInvadersDestroyed);
 			}
@@ -135,6 +151,7 @@ void GameManager::render(sf::RenderWindow& pWindow)
 	case GameState::ePLAYING: 
 	{
 		// ---- RENDER OBJECTS --------------------------------------------- //
+		mShields.render(pWindow);
 		mPlayerCannon.render(pWindow);
 		mInvaders.render(pWindow);
 		renderMissiles(pWindow);
@@ -217,7 +234,28 @@ void GameManager::hasPlayerCannonShotCollided()
 {
 	PlayerCannonShot& playerShot = mPlayerCannon.mPlayerCannonShot;
 
-	// has collided with barrier?
+	// has collided with shield?
+	for (sf::Sprite shield : mShields.mSprites)
+	{
+		if (hasSpriteCollided(playerShot.mRect, shield))
+		{
+			// check for general collision so we can go in and do per-pixel if needed
+			if (perPixelCollision(false, playerShot.mRect, shield, mShields.mRenderImage))
+			{
+				const Vector2f& pos = playerShot.mRect.getPosition();
+
+				// little random offsets to the shot
+				int randX = GameGlobals::randint(-2, 2);
+				Vector2f p(pos.x + randX, pos.y - 10);
+				mShields.shieldHit(p);
+
+				// move player shot out of the way of other invaders
+				playerShot.mRect.setPosition(0, 0);
+				mPlayerCannon.setCooldown();
+				return;
+			}
+		}
+	}
 
 	// has collided with flying saucer?
 
@@ -266,21 +304,90 @@ void GameManager::hasInvaderMissileCollided()
 {
 	for (InvaderMissile& missile : mInvadersMissiles)
 	{
-		// has collided with barrier?
+		sf::RectangleShape& m = missile.mMissile;
+
+		// has collided with shield?
+		for (sf::Sprite shield : mShields.mSprites)
+		{
+			// check for general collision so we can go in and do per-pixel if needed
+			if (hasSpriteCollided(m, shield))
+			{
+				if (perPixelCollision(true, m, shield, mShields.mRenderImage))
+				{
+					mShields.shieldHit(m.getPosition());
+
+					missile.mDestroyed = true;
+					break;
+				}
+			}
+		}
 
 		// has collided with player?
-		if (hasSpriteCollided(missile.mMissile, mPlayerCannon.mSprite))
+		if (hasSpriteCollided(m, mPlayerCannon.mSprite))
 		{
 			mGameHUD.updatePlayerLives(--mPlayerCannon.mLives);
 
 			missile.mDestroyed = true;
 			mPlayerCannon.mPlayerDestroyed = true;
+			break;
 		}
 
 		// has collided with player cannon shot?
 
 		// has collided with bottom screen edge?
 	}
+}
+
+// -----------------------------------------------------------------------------
+
+void GameManager::hasInvaderCollidedWithShield()
+{
+	Invader& invader = mInvaders.getCurrentInvader();
+	if (invader.mSprite.getPosition().y > 552)
+	{
+		// start destroying shields
+		for (sf::Sprite shield : mShields.mSprites)
+		{
+			if (!invader.mDestroyed && hasSpriteCollided(invader.mSprite, shield))
+			{
+				mShields.shieldHit(invader.mSprite.getPosition());
+				return;
+			}
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+
+// this is extremely hardcoded to this specific scenario
+bool GameManager::perPixelCollision(bool pIsInvaderMissile, sf::RectangleShape& pRectShape, sf::Sprite& pSprite, const sf::Image& pSpriteImage)
+{
+	using namespace sf;
+	Vector2i laserPos;
+
+	if (pIsInvaderMissile)
+	{
+		// use bottom on the rect
+		Vector2i temp = (Vector2i)pRectShape.getPosition();
+		laserPos = Vector2i(temp.x, temp.y + 12);
+	}
+	else
+	{
+		// returns top left of rect
+		laserPos = (Vector2i)pRectShape.getPosition();
+	}
+
+	// has the laser hit a solid pixel - I'm using a few different points on the laser
+	// due to multiplying all the pixels by 3 to "size" the game up
+	Color pixel = pSpriteImage.getPixel(laserPos.x, laserPos.y);
+	Color pixel2 = pSpriteImage.getPixel(laserPos.x + 2, laserPos.y);
+	Color pixel3 = pSpriteImage.getPixel(laserPos.x, laserPos.y - 5);
+	if (pixel.a == 0 && pixel2.a == 0 && pixel3.a == 0)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------

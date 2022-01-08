@@ -58,7 +58,7 @@ struct Invaders
 	void invaderDestroyedEvent(const Invader& pInvader);
 
 	Invader& getCurrentInvader() { return mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn]; }
-	const sf::Vector2f& getPosOfCurrentInvader() { return mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn].mSprite.getPosition(); }
+	const sf::Vector2f& getPosOfCurrentInvader() const { return mInvaders[mInvaderToUpdateRow][mInvaderToUpdateColumn].mSprite.getPosition(); }
 
 	std::vector<std::vector<Invader>> mInvaders;
 	std::vector<DestroyedEvent> mDestroyedSprites;
