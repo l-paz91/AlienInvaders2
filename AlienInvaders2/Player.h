@@ -30,7 +30,7 @@ struct PlayerCannon
 
 	const sf::Vector2f& getPos() const { mSprite.getPosition(); }
 
-	void shoot();
+	bool shoot();
 	void updateCannonShot(const float& pDeltaTime);
 	bool updatePlayerDestroyedAnim(const float& pDeltaTime);
 	void setCooldown();

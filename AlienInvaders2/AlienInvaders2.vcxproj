@@ -142,6 +142,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FlyingSaucer.cpp">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="GameManager.cpp">
       <SubType>
       </SubType>
@@ -172,6 +176,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FlyingSaucer.h">
+      <SubType>
+      </SubType>
+    </ClInclude>
     <ClInclude Include="GameConstants.h">
       <SubType>
       </SubType>

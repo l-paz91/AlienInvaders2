@@ -13,7 +13,11 @@ GameManager::GameManager()
 	, mPlayerCannon()
 	, mInvadersMissiles()
 	, mShields()
+	, mUFO()
+	, mUfoScoreTable{100, 50, 50, 100, 150, 100, 100, 50, 300, 100, 100, 100, 50, 150, 100, 50}
+	, mUfoScoreTableIt(mUfoScoreTable.begin())
 	, mInvadersDestroyed(0)
+	, mNumPlayerShots(0)
 	, mInvaderMaxShots(3)
 	, mInvaderMissileElapsedTime(0.0f)
 	, mPauseElapsedTime(0.0f)
@@ -29,8 +33,11 @@ void GameManager::init()
 	mGameHUD.init();
 	mInvaders.init();
 	mPlayerCannon.init();
+	mShields.init();
+	mUFO.init();
 	mInvadersMissiles.clear();
 	mInvadersDestroyed = 0;
+	mNumPlayerShots = 0;
 	mInvaderMissileElapsedTime = 0.0f;
 	mPauseElapsedTime = 0.0f;
 	mGameState = GameState::ePLAYING;
@@ -72,7 +79,16 @@ void GameManager::update(const float& pDeltaTime)
 			// until it's finished
 			if (mInvaders.mDestroyedSprites.empty())
 			{
-				mPlayerCannon.shoot();
+				if (mPlayerCannon.shoot())
+				{
+					++mNumPlayerShots;
+					if (++mUfoScoreTableIt == mUfoScoreTable.end()-1)
+					{
+						// there is a bug in the original which causes the iterator to wrap
+						// every 15 shots even though the table has 16 items. So we'll do the same
+						mUfoScoreTableIt = mUfoScoreTable.begin();
+					}
+				}
 
 				mInvaders.moveAndAnimate(pDeltaTime);
 				InvaderTryShoot(pDeltaTime);
@@ -80,7 +96,12 @@ void GameManager::update(const float& pDeltaTime)
 				hasInvaderMissileCollided();
 				hasInvaderCollidedWithShield();
 
-				// it's about to hit player
+				// can display a flying saucer? Usually this disables invader shot 3,
+				// but that's not implemented yet
+				const bool oddOrEven = (mNumPlayerShots & 1);
+				mUFO.update(pDeltaTime, oddOrEven);
+
+				// are invaders about to hit player
 				Invader& invader = mInvaders.getCurrentInvader();
 				if (!invader.mDestroyed && invader.mSprite.getPosition().y > 621)
 				{
@@ -155,6 +176,7 @@ void GameManager::render(sf::RenderWindow& pWindow)
 		mPlayerCannon.render(pWindow);
 		mInvaders.render(pWindow);
 		renderMissiles(pWindow);
+		mUFO.render(pWindow);
 
 		// ---- RENDER HUD ------------------------------------------------- //
 		mGameHUD.render(pWindow);
@@ -162,7 +184,7 @@ void GameManager::render(sf::RenderWindow& pWindow)
 	}
 	case GameState::eGAMEOVER: 
 	{
-
+		mGameHUD.render(pWindow);
 		break;
 	}
 	case GameState::ePAUSE: 
@@ -258,6 +280,15 @@ void GameManager::hasPlayerCannonShotCollided()
 	}
 
 	// has collided with flying saucer?
+	if (playerShot.mRect.getPosition().y < 160 && hasSpriteCollided(playerShot.mRect, mUFO.mSprite))
+	{
+		// update flying saucer
+		mUFO.mDestroyed = true;
+
+		// get score from table and send to UFO
+		mUFO.setUfoScore(*mUfoScoreTableIt, mUFO.mSprite.getPosition());
+		mGameHUD.updatePlayer1Score(*mUfoScoreTableIt);
+	}
 
 	// has collided with top of screen?
 

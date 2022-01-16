@@ -4,6 +4,7 @@
 // -----------------------------------------------------------------------------
 
 //--INCLUDES--//
+#include "FlyingSaucer.h"
 #include "HUD.h"
 #include "InvaderMissiles.h"
 #include "Invaders.h"
@@ -47,8 +48,13 @@ struct GameManager
 	PlayerCannon mPlayerCannon;
 	std::vector<InvaderMissile> mInvadersMissiles;
 	Shields mShields;
+	FlyingSaucer mUFO;
+
+	std::vector<int> mUfoScoreTable;
+	std::vector<int>::iterator mUfoScoreTableIt;
 
 	int mInvadersDestroyed;
+	int mNumPlayerShots;
 
 private:
 	template<typename T1, typename T2>

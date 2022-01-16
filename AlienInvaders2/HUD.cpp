@@ -181,7 +181,7 @@ void HUD::render(sf::RenderWindow& pWindow)
 	pWindow.draw(mCreditText);
 
 	pWindow.draw(mScore1);
-	pWindow.draw(mScore2);
+	//pWindow.draw(mScore2);
 	pWindow.draw(mHiScore);
 
 	pWindow.draw(mGreenBar);

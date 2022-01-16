@@ -17,6 +17,7 @@ struct DisplayTextWithFrameDelay
 		, mElapsedFrames(0)
 		, mFrameDelay(pFrameDelay)
 		, mIndex(0)
+		, mDisplay(false)
 	{}
 
 	bool update()
@@ -37,11 +38,25 @@ struct DisplayTextWithFrameDelay
 		return false;
 	}
 
+	bool showTextForFrames()
+	{
+		++mElapsedFrames;
+		if (mElapsedFrames > mFrameDelay)
+		{
+			//we've finished displaying the message
+			reset();
+			return true;
+		}
+
+		return false;
+	}
+
 	void reset()
 	{
 		mDisplayText.setString("");
 		mElapsedFrames = 0;
 		mIndex = 0;
+		mDisplay = false;
 	}
 
 	sf::Text mDisplayText;
@@ -49,6 +64,7 @@ struct DisplayTextWithFrameDelay
 	int mElapsedFrames;
 	int mFrameDelay;
 	uint16_t mIndex;
+	bool mDisplay;
 };
 
 // -----------------------------------------------------------------------------
@@ -100,7 +116,7 @@ struct HUD
 	sf::Text mHiScore;
 
 	sf::RectangleShape mGreenBar;
-	std::vector<sf::Sprite> mLivesSprites;
+	std::vector<sf::Sprite> mLivesSprites;	
 
 	ScoreAdvanceTable mScoreAdvanceTable;
 

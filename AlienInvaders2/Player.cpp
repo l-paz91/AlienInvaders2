@@ -121,7 +121,7 @@ void PlayerCannon::render(sf::RenderWindow& pWindow)
 
 // -----------------------------------------------------------------------------
 
-void PlayerCannon::shoot()
+bool PlayerCannon::shoot()
 {
 	using namespace sf;
 	using namespace PlayerPrivate;
@@ -134,6 +134,7 @@ void PlayerCannon::shoot()
 			// ensure shot always spawns direct top-centre of the player
 			mPlayerCannonShot.mRect.setPosition(mSprite.getPosition().x - 2, PLAYER_Y - 12);
 			mPlayerCannonShot.mShotFired = true;
+			return true;
 		}
 
 		// top hit?
@@ -143,6 +144,8 @@ void PlayerCannon::shoot()
 			mPlayerCannonShot.mShotFired = false;
 		}
 	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
