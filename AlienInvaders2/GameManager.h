@@ -4,6 +4,8 @@
 // -----------------------------------------------------------------------------
 
 //--INCLUDES--//
+#include <SFML/Graphics.hpp>
+
 #include "FlyingSaucer.h"
 #include "HUD.h"
 #include "InvaderMissiles.h"
@@ -16,10 +18,8 @@
 enum class GameState
 {
 	eTITLE,
-	eINSTRUCTIONS,
 	ePLAYING,
-	eGAMEOVER,
-	ePAUSE
+	eGAMEOVER
 };
 
 // -----------------------------------------------------------------------------

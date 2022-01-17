@@ -13,11 +13,8 @@
 */
 
 //--INCLUDES--//
-#include <SFML/Graphics.hpp>
 #include <random>
-
-#include "HUD.h"
-#include "TextureManager.h"
+#include <ctime>
 
 // -----------------------------------------------------------------------------
 
@@ -35,7 +32,7 @@ namespace GameGlobals
 
 	inline int randint(int min, int max)
 	{
-		static std::default_random_engine ran((unsigned int)time(0));
+		static std::default_random_engine ran((unsigned int)std::time(0));
 		return std::uniform_int_distribution<>{min, max}(ran);
 	}
 }

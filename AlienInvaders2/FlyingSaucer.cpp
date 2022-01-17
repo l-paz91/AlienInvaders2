@@ -3,6 +3,7 @@
 //--INCLUDES--//
 #include "GameConstants.h"
 #include "TextureManager.h"
+#include "SoundManager.h"
 
 #include "FlyingSaucer.h"
 
@@ -65,12 +66,14 @@ void FlyingSaucer::update(const float& pDeltaTime, bool pDirection)
 			mTimeUntilSaucer = 0.0f;
 			mDisplaySaucer = true;
 
+			SoundManager::playSound(SoundEvent::eFLYING_SAUCER);
+
 			// the saucers direction is determined by the last bit of the number of
 			// shots by the player. So if 1 or 0 (odd or even)
 			if (pDirection)
 			{
 				// start from right and go left
-				mSprite.setPosition(GameGlobals::RIGHT_EDGE-49, UFOPrivate::ufoLevelY);
+				mSprite.setPosition(GameGlobals::RIGHT_EDGE-48, UFOPrivate::ufoLevelY);
 				mSpeed = -120;
 			}
 			else
@@ -90,6 +93,9 @@ void FlyingSaucer::update(const float& pDeltaTime, bool pDirection)
 			// switch sprites and display for 2 seconds
 			mSprite.setTextureRect(UFOPrivate::ufoDestroyedOffset);
 			mTimeUntilSaucer += pDeltaTime;
+
+			SoundManager::stopSound(SoundEvent::eFLYING_SAUCER);
+
 			if (mTimeUntilSaucer > 1.0f)
 			{
 				mDestroyed = false;
@@ -121,6 +127,7 @@ void FlyingSaucer::update(const float& pDeltaTime, bool pDirection)
 		if (mSprite.getPosition().x > GameGlobals::RIGHT_EDGE - 48
 			|| mSprite.getPosition().x < GameGlobals::LEFT_EDGE)
 		{
+			SoundManager::stopSound(SoundEvent::eFLYING_SAUCER);
 			mDisplaySaucer = false;
 			mSprite.setPosition(-40, -40);
 		}

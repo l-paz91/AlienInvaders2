@@ -2,6 +2,7 @@
 
 //--INCLUDES--//
 #include "GameConstants.h"
+#include "SoundManager.h"
 
 #include "GameManager.h"
 
@@ -40,7 +41,7 @@ void GameManager::init()
 	mNumPlayerShots = 0;
 	mInvaderMissileElapsedTime = 0.0f;
 	mPauseElapsedTime = 0.0f;
-	mGameState = GameState::ePLAYING;
+	mGameState = GameState::eTITLE;
 }
 
 // -----------------------------------------------------------------------------
@@ -64,10 +65,15 @@ void GameManager::update(const float& pDeltaTime)
 		}
 		break;
 	}
-	case GameState::eINSTRUCTIONS:
-		break;
 	case GameState::ePLAYING:
 	{
+		if (mInvadersDestroyed == 55)
+		{
+			// just init for not, I'll create the animation later
+			init();
+			return;
+		}
+
 		// the game "freezes" whilst the players destroyed animation is playing
 		if (!mPlayerCannon.mPlayerDestroyed)
 		{
@@ -81,6 +87,8 @@ void GameManager::update(const float& pDeltaTime)
 			{
 				if (mPlayerCannon.shoot())
 				{
+					SoundManager::playSound(SoundEvent::ePLAYER_FIRE);
+
 					++mNumPlayerShots;
 					if (++mUfoScoreTableIt == mUfoScoreTable.end()-1)
 					{
@@ -142,11 +150,6 @@ void GameManager::update(const float& pDeltaTime)
 		}
 		break;
 	}
-	case GameState::ePAUSE:
-	{
-		
-		break;
-	}
 	default:
 		break;
 	}
@@ -161,12 +164,6 @@ void GameManager::render(sf::RenderWindow& pWindow)
 	case GameState::eTITLE: 
 	{
 		mGameHUD.renderTitleScreen(pWindow);
-		break;
-	}
-	case GameState::eINSTRUCTIONS: 
-	{
-
-
 		break;
 	}
 	case GameState::ePLAYING: 
@@ -185,11 +182,6 @@ void GameManager::render(sf::RenderWindow& pWindow)
 	case GameState::eGAMEOVER: 
 	{
 		mGameHUD.render(pWindow);
-		break;
-	}
-	case GameState::ePAUSE: 
-	{
-
 		break;
 	}
 	default:
@@ -264,11 +256,11 @@ void GameManager::hasPlayerCannonShotCollided()
 			// check for general collision so we can go in and do per-pixel if needed
 			if (perPixelCollision(false, playerShot.mRect, shield, mShields.mRenderImage))
 			{
-				const Vector2f& pos = playerShot.mRect.getPosition();
+				const sf::Vector2f& pos = playerShot.mRect.getPosition();
 
 				// little random offsets to the shot
 				int randX = GameGlobals::randint(-2, 2);
-				Vector2f p(pos.x + randX, pos.y - 10);
+				sf::Vector2f p(pos.x + randX, pos.y - 10);
 				mShields.shieldHit(p);
 
 				// move player shot out of the way of other invaders
@@ -304,6 +296,9 @@ void GameManager::hasPlayerCannonShotCollided()
 				++mInvadersDestroyed;
 				invader.mDestroyed = true;
 				mInvaders.invaderDestroyedEvent(invader);
+
+				// play a sound
+				SoundManager::playSound(SoundEvent::eALIEN_HIT);
 
 				// move player shot out of the way of other invaders
 				playerShot.mRect.setPosition(0, 0);
@@ -357,6 +352,9 @@ void GameManager::hasInvaderMissileCollided()
 		if (hasSpriteCollided(m, mPlayerCannon.mSprite))
 		{
 			mGameHUD.updatePlayerLives(--mPlayerCannon.mLives);
+
+			// play sound
+			SoundManager::playSound(SoundEvent::ePLAYER_LIFE_LOST);
 
 			missile.mDestroyed = true;
 			mPlayerCannon.mPlayerDestroyed = true;
